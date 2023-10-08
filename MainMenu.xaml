@@ -1,0 +1,23 @@
+﻿<Page
+    x:Class="_5_crypto_2_final_ver.MainMenu"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:_5_crypto_2_final_ver"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Background="#FFB9C5C3">
+        <Border
+            Background="#FF9BA6A4"
+            Margin="4"
+            >
+            <TextBlock
+                FontSize="20"
+                TextWrapping="Wrap"
+                Text="Для ввода данных, необходимых для работы программы предусмотрено два режима работы: ввод с клавиатуры и ввод из файла. Для ввода с клавиатуры необходимо нажать соответствующую кнопку 'Ввод с клавиатуры'"
+                />
+        </Border>
+    </Grid>
+</Page>
