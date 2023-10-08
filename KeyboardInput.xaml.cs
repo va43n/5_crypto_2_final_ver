@@ -32,7 +32,7 @@ namespace _5_crypto_2_final_ver
         {
             this.InitializeComponent();
         }
-        private async void FirstChooseButton_Click(object sender, RoutedEventArgs e)
+        private void FirstChooseButton_Click(object sender, RoutedEventArgs e)
         {
             string output;
             try
@@ -62,7 +62,7 @@ namespace _5_crypto_2_final_ver
             }
         }
 
-        private async void SecondChooseButton_Click(object sender, RoutedEventArgs e)
+        private void SecondChooseButton_Click(object sender, RoutedEventArgs e)
         {
             string output;
             try

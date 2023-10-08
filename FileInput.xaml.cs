@@ -72,6 +72,8 @@ namespace _5_crypto_2_final_ver
                 output = sp.CodeMessage(input);
                 ResultTextBox.Text = output;
 
+                await FileIO.WriteTextAsync(output_file, output);
+
                 CodeWordsTextBox.Text = "";
                 for (int i = 0; i < sp.N; i++)
                 {
@@ -88,7 +90,7 @@ namespace _5_crypto_2_final_ver
             catch (Exception exc)
             {
                 MessageDialog message = new MessageDialog(exc.Message);
-                message.ShowAsync().AsTask();
+                await message.ShowAsync().AsTask();
             }
         }
 
@@ -111,6 +113,8 @@ namespace _5_crypto_2_final_ver
                 output = sp.DecodeMessage(input);
                 ResultTextBox.Text = output;
 
+                await FileIO.WriteTextAsync(output_file, output);
+
                 CodeWordsTextBox.Text = "";
                 for (int i = 0; i < sp.N; i++)
                 {
@@ -127,7 +131,7 @@ namespace _5_crypto_2_final_ver
             catch (Exception exc)
             {
                 MessageDialog message = new MessageDialog(exc.Message);
-                message.ShowAsync().AsTask();
+                await message.ShowAsync().AsTask();
             }
         }
     }
