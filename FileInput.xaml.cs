@@ -1,31 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using System.Text;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Windows.UI.Popups;
-using System.Windows;
-using Microsoft.Win32;
 using Windows.Storage;
-
-// Документацию по шаблону элемента "Пустая страница" см. по адресу https://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace _5_crypto_2_final_ver
 {
-    /// <summary>
-    /// Пустая страница, которую можно использовать саму по себе или для перехода внутри фрейма.
-    /// </summary>
     public sealed partial class FileInput : Page
     {
         public string probs_file_name = "probabilities.txt";
@@ -41,13 +21,16 @@ namespace _5_crypto_2_final_ver
         {
             string temp;
 
+            //Получение доступа к нужной папке
             StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
             temp = storageFolder.Path;
 
+            //Вывод путей к файлам на экран
             ProbsPathTextBox.Text = temp + @"\" + probs_file_name;
             InputPathTextBox.Text = temp + @"\" + input_file_name;
             OutputPathTextBox.Text = temp + @"\" + output_file_name;
 
+            //Если файлов не существует, создать их
             await storageFolder.CreateFileAsync(probs_file_name, CreationCollisionOption.OpenIfExists);
             await storageFolder.CreateFileAsync(input_file_name, CreationCollisionOption.OpenIfExists);
             await storageFolder.CreateFileAsync(output_file_name, CreationCollisionOption.OpenIfExists);
@@ -57,29 +40,37 @@ namespace _5_crypto_2_final_ver
         {
             string output, probs, input;
 
+            //Получение доступа к нужной папке
             StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
+            //Если файлов не существует, создать их
             StorageFile probs_file = await storageFolder.CreateFileAsync(probs_file_name, CreationCollisionOption.OpenIfExists);
             StorageFile input_file = await storageFolder.CreateFileAsync(input_file_name, CreationCollisionOption.OpenIfExists);
             StorageFile output_file = await storageFolder.CreateFileAsync(output_file_name, CreationCollisionOption.OpenIfExists);
 
+            //Получение алфавита и сообщения из файлов
             probs = await FileIO.ReadTextAsync(probs_file);
             input = await FileIO.ReadTextAsync(input_file);
 
             try
             {
+                //Инициализация класса с использованием текста из файла probabilities.txt
                 StartParameters sp = new StartParameters(probs);
 
+                //Кодирование информации из файла input.txt
                 output = sp.CodeMessage(input);
                 ResultTextBox.Text = output;
 
+                //Запись результата в файл
                 await FileIO.WriteTextAsync(output_file, output);
 
+                //Вывод кодовых слов на экран
                 CodeWordsTextBox.Text = "";
                 for (int i = 0; i < sp.N; i++)
                 {
                     CodeWordsTextBox.Text += sp.names[i] + " -> " + sp.code_words[i] + Environment.NewLine;
                 }
 
+                //Вывод характеристик на экран
                 CharacteristicsTextBox.Text = "Средняя длина кодового слова - " + sp.average_length + Environment.NewLine;
                 CharacteristicsTextBox.Text += "Избыточность - " + sp.redundancy + Environment.NewLine;
                 CharacteristicsTextBox.Text += "Неравенство Крафта - сумма равна " + sp.KraftInequality + " ";
@@ -89,6 +80,7 @@ namespace _5_crypto_2_final_ver
             }
             catch (Exception exc)
             {
+                //Если что-то пошло не так, на экран выводится сообщение с ошибкой
                 MessageDialog message = new MessageDialog(exc.Message);
                 await message.ShowAsync().AsTask();
             }
@@ -98,29 +90,37 @@ namespace _5_crypto_2_final_ver
         {
             string output, probs, input;
 
+            //Получение доступа к нужной папке
             StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
+            //Если файлов не существует, создать их
             StorageFile probs_file = await storageFolder.CreateFileAsync(probs_file_name, CreationCollisionOption.OpenIfExists);
             StorageFile input_file = await storageFolder.CreateFileAsync(input_file_name, CreationCollisionOption.OpenIfExists);
             StorageFile output_file = await storageFolder.CreateFileAsync(output_file_name, CreationCollisionOption.OpenIfExists);
 
+            //Получение алфавита и сообщения из файлов
             probs = await FileIO.ReadTextAsync(probs_file);
             input = await FileIO.ReadTextAsync(input_file);
 
             try
             {
+                //Инициализация класса с использованием текста из файла probabilities.txt
                 StartParameters sp = new StartParameters(probs);
 
+                //Кодирование информации из файла input.txt
                 output = sp.DecodeMessage(input);
                 ResultTextBox.Text = output;
 
+                //Запись результата в файл
                 await FileIO.WriteTextAsync(output_file, output);
 
+                //Вывод кодовых слов на экран
                 CodeWordsTextBox.Text = "";
                 for (int i = 0; i < sp.N; i++)
                 {
                     CodeWordsTextBox.Text += sp.names[i] + " -> " + sp.code_words[i] + Environment.NewLine;
                 }
 
+                //Вывод характеристик на экран
                 CharacteristicsTextBox.Text = "Средняя длина кодового слова - " + sp.average_length + Environment.NewLine;
                 CharacteristicsTextBox.Text += "Избыточность - " + sp.redundancy + Environment.NewLine;
                 CharacteristicsTextBox.Text += "Неравенство Крафта - сумма равна " + sp.KraftInequality + " ";
@@ -130,6 +130,7 @@ namespace _5_crypto_2_final_ver
             }
             catch (Exception exc)
             {
+                //Если что-то пошло не так, на экран выводится сообщение с ошибкой
                 MessageDialog message = new MessageDialog(exc.Message);
                 await message.ShowAsync().AsTask();
             }

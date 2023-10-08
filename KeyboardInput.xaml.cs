@@ -1,31 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using System.Text;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Windows.UI.Popups;
-using System.Windows;
-using Microsoft.Win32;
-using Windows.Storage;
-
-// Документацию по шаблону элемента "Пустая страница" см. по адресу https://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace _5_crypto_2_final_ver
 {
-    /// <summary>
-    /// Пустая страница, которую можно использовать саму по себе или для перехода внутри фрейма.
-    /// </summary>
     public sealed partial class KeyboardInput : Page
     {
         public KeyboardInput()
@@ -34,20 +13,26 @@ namespace _5_crypto_2_final_ver
         }
         private void FirstChooseButton_Click(object sender, RoutedEventArgs e)
         {
+            //Кодирование информации
             string output;
             try
             {
+                //Инициализация класса с использованием текстового поля с алфавитом
                 StartParameters sp = new StartParameters(EnterProbsTextBox.Text);
 
+                //Кодирование информации из текстового поля
                 output = sp.CodeMessage(EnterInputTextBox.Text);
+                //Вывод результата на экран
                 ResultTextBox.Text = output;
 
+                //Вывод кодовых слов на экран
                 CodeWordsTextBox.Text = "";
                 for (int i = 0; i < sp.N; i++)
                 {
                     CodeWordsTextBox.Text += sp.names[i] + " -> " + sp.code_words[i] + Environment.NewLine;
                 }
 
+                //Вывод характеристик на экран
                 CharacteristicsTextBox.Text = "Средняя длина кодового слова - " + sp.average_length + Environment.NewLine;
                 CharacteristicsTextBox.Text += "Избыточность - " + sp.redundancy + Environment.NewLine;
                 CharacteristicsTextBox.Text += "Неравенство Крафта - сумма равна " + sp.KraftInequality + " ";
@@ -57,6 +42,7 @@ namespace _5_crypto_2_final_ver
             }
             catch (Exception exc)
             {
+                //Если что-то пошло не так, на экран выводится сообщение с ошибкой
                 MessageDialog message = new MessageDialog(exc.Message);
                 message.ShowAsync().AsTask();
             }
@@ -67,17 +53,22 @@ namespace _5_crypto_2_final_ver
             string output;
             try
             {
+                //Инициализация класса с использованием текстового поля с алфавитом
                 StartParameters sp = new StartParameters(EnterProbsTextBox.Text);
 
+                //Декодирование информации из текстового поля
                 output = sp.DecodeMessage(EnterInputTextBox.Text);
+                //Вывод результата на экран
                 ResultTextBox.Text = output;
 
+                //Вывод кодовых слов на экран
                 CodeWordsTextBox.Text = "";
                 for (int i = 0; i < sp.N; i++)
                 {
                     CodeWordsTextBox.Text += sp.names[i] + " -> " + sp.code_words[i] + Environment.NewLine;
                 }
 
+                //Вывод характеристик на экран
                 CharacteristicsTextBox.Text = "Средняя длина кодового слова - " + sp.average_length + Environment.NewLine;
                 CharacteristicsTextBox.Text += "Избыточность - " + sp.redundancy + Environment.NewLine;
                 CharacteristicsTextBox.Text += "Неравенство Крафта - сумма равна " + sp.KraftInequality + " ";
@@ -87,6 +78,7 @@ namespace _5_crypto_2_final_ver
             }
             catch (Exception exc)
             {
+                //Если что-то пошло не так, на экран выводится сообщение с ошибкой
                 MessageDialog message = new MessageDialog(exc.Message);
                 message.ShowAsync().AsTask();
             }

@@ -1,25 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-
-// Документацию по шаблону элемента "Пустая страница" см. по адресу https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x419
 
 namespace _5_crypto_2_final_ver
 {
-    /// <summary>
-    /// Пустая страница, которую можно использовать саму по себе или для перехода внутри фрейма.
-    /// </summary>
     public sealed partial class MainPage : Page
     {
         public MainPage()
@@ -66,13 +50,16 @@ namespace _5_crypto_2_final_ver
             bool[] used;
             string text = probs;
 
-
+            //Проверка валидности текста, задающего алфавит
             if (text == null || !text.Contains(" ")) { throw new Exception("Неправильная запись алфавита. Каждый символ должна сопровождаться вероятностью её появления, между символами и вероятностями должны стоять пробелы"); }
+            //Массив элементов алфавита
             parameters = text.Split(' ');
 
+            //Если элементов в алфавите нечетное число, значит пропущен какой-либо элемент
             N = parameters.Length;
             if (N % 2 != 0) { throw new Exception("Элементов должно быть четное число, нечетные элементы - буквы алфавита, четные элементы - соответствующие буквам вероятности. Скорее всего элементов не хватает."); }
 
+            //Необходимо убедиться, что символов в алфавите хотя бы 2
             if (N < 4) { throw new Exception("Символов введено слишком мало. Введите хотя бы два символа и повторите попытку."); }
             N /= 2;
 
@@ -83,11 +70,13 @@ namespace _5_crypto_2_final_ver
 
             foreach (string p in parameters)
             {
+                //Проверка символов алфавита
                 if (counter % 2 == 0)
                 {
                     if (Array.Exists(names, element => element == p)) { throw new Exception("Алфавит должен состоять из неповторяющихся элементов. Элемент \"" + p + "\" повторяется."); }
                     names[counter / 2] = p;
                 }
+                //Проверка вероятностей алфавита
                 else
                 {
                     try { probabilities[(counter - 1) / 2] = Convert.ToDouble(p); }
@@ -101,6 +90,7 @@ namespace _5_crypto_2_final_ver
                 counter++;
             }
 
+            //Проверка равенства суммы вероятностей и единицы
             if (!(temp + Math.Pow(10, -10) >= 1 && temp - Math.Pow(10, -10) <= 1)) { throw new Exception("Сумма всех вероятностей должна быть равна 1. Сейчас она равна " + temp + "."); }
 
             indices = new string[N + N - 1];
@@ -108,10 +98,12 @@ namespace _5_crypto_2_final_ver
 
             for (int i = 0; i < N; i++) { indices[i] = Convert.ToString(i); }
 
+            //Создание бинарного дерева из имеющегося алфавита
             for (int i = N; i < 2 * N - 1; i++)
             {
                 min1 = N + N - 1;
                 min2 = N + N - 1;
+                //Поиск двух самых малых вероятностей
                 for (int j = 0; j < i; j++)
                 {
                     if (probabilities[j] < probabilities[min1] && j != min1 && !used[j])
@@ -121,25 +113,31 @@ namespace _5_crypto_2_final_ver
                     }
                     else if (probabilities[j] < probabilities[min2] && j != min1 && !used[j]) { min2 = j; }
                 }
+                //Объединение самых малых вероятностей в новую вероятность
                 probabilities[i] = probabilities[min1] + probabilities[min2];
                 indices[i] = Convert.ToString(min1) + ":" + Convert.ToString(min2);
+                //Найденные вероятности больше не учитываются при поиске следующих самых малых вероятностей
                 used[min1] = true;
                 used[min2] = true;
             }
 
+            //Обход бинарного дерева с целью получения кодовых слов
             FindCodeWords(N + N - 2, "");
 
+            //Подсчет характеристик
             max_code_word_length = 0;
             KraftInequality = 0;
             temp = 0;
+            //Получение средней длины и суммы в правой части неравенства Крафта
             for (int i = 0; i < N; i++)
             {
-                temp += code_words[i].Length;
+                temp += code_words[i].Length * probabilities[i];
                 KraftInequality += Math.Pow(2, -code_words[i].Length);
                 if (code_words[i].Length > max_code_word_length) { max_code_word_length = code_words[i].Length; }
             }
-            average_length = temp / N;
+            average_length = temp;
 
+            //Поиск избыточности
             redundancy = 0;
             for (int i = 0; i < N; i++)
             {
@@ -155,21 +153,27 @@ namespace _5_crypto_2_final_ver
         private void FindCodeWords(int i, string current_code_word)
         {
             string[] halfs;
+
             halfs = indices[i].Split(':');
+            //Если левый элемент является "листом" дерева, то к последовательности добавляется еще один "0" и таким образом получается кодовое слово, по индексу совпадающее с индексом "листа"
             if (Convert.ToInt32(halfs[0]) < N) { code_words[Convert.ToInt32(halfs[0])] = current_code_word + "0"; }
+            //Иначе к последовательности добавляется "0"
             else { FindCodeWords(Convert.ToInt32(halfs[0]), current_code_word + "0"); }
+            //Если правый элемент является "листом" дерева, то к последовательности добавляется еще одна "1" и таким образом получается кодовое слово, по индексу совпадающее с индексом "листа"
             if (Convert.ToInt32(halfs[1]) < N) { code_words[Convert.ToInt32(halfs[1])] = current_code_word + "1"; }
+            //Иначе к последовательности добавляется "1"
             else { FindCodeWords(Convert.ToInt32(halfs[1]), current_code_word + "1"); }
         }
 
         public string CodeMessage(string input)
         {
+            //Кодирование сообщения
             string text, output = "";
             bool isElementConsists;
 
             text = input;
-            if (text == null) { throw new Exception("Вы не ввели строку для кодирования."); }
 
+            //Для каждого символа сообщения проверяется, существует ли он в заданном алфавите, если да, то в выходное сообщение записывается соответсвующее кодовое слово, иначе вызывается исключение
             foreach (char letter in text)
             {
                 isElementConsists = false;
@@ -190,14 +194,15 @@ namespace _5_crypto_2_final_ver
 
         public string DecodeMessage(string input)
         {
+            //Декодирование сообщения
             string text, code_word = "", output = "";
 
             text = input;
-            if (text == null) { throw new Exception("Вы не ввели строку для декодирования."); }
 
             foreach (char letter in text)
             {
                 code_word += Convert.ToString(letter);
+                //Поэлементно добавляем к некоторой строке значения из сообщения, если существует такое кодовое слово, то соответствующий символ алфавита записывается в выходную строку
                 for (int i = 0; i < N; i++)
                 {
                     if (code_word == code_words[i])
@@ -207,11 +212,11 @@ namespace _5_crypto_2_final_ver
                         break;
                     }
                 }
-                if (code_word.Length == max_code_word_length)
-                {
-                    throw new Exception("Текст невозможно декодировать, проверьте правильность ввода и повторите попытку.");
-                }
+                //Если некоторая строка превышает максимальную длину кодового слова, значит сообщение для декодирования заисано неверно
+                if (code_word.Length == max_code_word_length) { throw new Exception("Текст невозможно декодировать, проверьте правильность ввода и повторите попытку."); }
             }
+            //Если что-то осталось после попытки декодирования, значит сообщение для декодирования записано неверно
+            if (code_word != "") { throw new Exception("Текст невозможно декодировать, проверьте правильность ввода и повторите попытку."); }
 
             return output;
         }
