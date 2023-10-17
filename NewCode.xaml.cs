@@ -59,7 +59,7 @@ namespace _5_crypto_2_final_ver
             try
             {
                 //Инициализация класса с использованием текста из файла probabilities.txt
-                StartParameters sp = new StartParameters(probs);
+                StartParameters sp = new StartParameters(probs, 1);
                 sp.AddEvenBit();
 
                 //Кодирование информации из файла input.txt
@@ -92,7 +92,7 @@ namespace _5_crypto_2_final_ver
             }
         }
 
-        private async void CodeFileButton_Click(object sender, RoutedEventArgs e)
+        private async void DecodeFileButton_Click(object sender, RoutedEventArgs e)
         {
             string probs, input;
             string[] output;
@@ -111,7 +111,7 @@ namespace _5_crypto_2_final_ver
             try
             {
                 //Инициализация класса с использованием текста из файла probabilities.txt
-                StartParameters sp = new StartParameters(probs);
+                StartParameters sp = new StartParameters(probs, 1);
                 sp.AddEvenBit();
 
                 //Кодирование информации из файла input.txt

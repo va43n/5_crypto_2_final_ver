@@ -183,7 +183,7 @@
                 Background="#FF87BFC5"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
-                Click="CodeFileButton_Click">
+                Click="DecodeFileButton_Click">
                 <Viewbox>
                     <TextBlock Text="Декодировать"/>
                 </Viewbox>

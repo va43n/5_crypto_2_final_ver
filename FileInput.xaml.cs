@@ -86,7 +86,7 @@ namespace _5_crypto_2_final_ver
             }
         }
 
-        private async void CodeFileButton_Click(object sender, RoutedEventArgs e)
+        private async void DecodeFileButton_Click(object sender, RoutedEventArgs e)
         {
             string output, probs, input;
 

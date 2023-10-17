@@ -45,7 +45,7 @@ namespace _5_crypto_2_final_ver
         public readonly double redundancy;
         public readonly double KraftInequality;
 
-        public StartParameters(string probs)
+        public StartParameters(string probs, int mode = 0)
         {
             string[] parameters;
             int counter = 0;
@@ -56,48 +56,67 @@ namespace _5_crypto_2_final_ver
 
             //Проверка валидности текста, задающего алфавит
             if (text == null || !text.Contains(" ")) { throw new Exception("Неправильная запись алфавита. Каждый символ должна сопровождаться вероятностью её появления, между символами и вероятностями должны стоять пробелы"); }
-            //Массив элементов алфавита
-            parameters = text.Split(' ');
 
-            //Если элементов в алфавите нечетное число, значит пропущен какой-либо элемент
-            N = parameters.Length;
-            if (N % 2 != 0) { throw new Exception("Элементов должно быть четное число, нечетные элементы - буквы алфавита, четные элементы - соответствующие буквам вероятности. Скорее всего элементов не хватает."); }
-
-            //Необходимо убедиться, что символов в алфавите хотя бы 2
-            if (N < 4) { throw new Exception("Символов введено слишком мало. Введите хотя бы два символа и повторите попытку."); }
-            N /= 2;
-
-            names = new string[N];
-            code_words = new string[N];
-            probabilities = new double[N + N];
-            probabilities[N + N - 1] = 2;
-
-            foreach (string p in parameters)
+            if (mode == 0)
             {
-                //Проверка символов алфавита
-                if (counter % 2 == 0)
+                //Массив элементов алфавита
+                parameters = text.Split(' ');
+                //Если элементов в алфавите нечетное число, значит пропущен какой-либо элемент
+                N = parameters.Length;
+                if (N % 2 != 0) { throw new Exception("Элементов должно быть четное число, нечетные элементы - буквы алфавита, четные элементы - соответствующие буквам вероятности. Скорее всего элементов не хватает."); }
+
+                //Необходимо убедиться, что символов в алфавите хотя бы 2
+                if (N < 4) { throw new Exception("Символов введено слишком мало. Введите хотя бы два символа и повторите попытку."); }
+                N /= 2;
+
+                names = new string[N];
+                code_words = new string[N];
+                probabilities = new double[N + N];
+                probabilities[N + N - 1] = 2;
+
+                foreach (string p in parameters)
                 {
-                    if (Array.Exists(names, element => element == p)) { throw new Exception("Алфавит должен состоять из неповторяющихся элементов. Элемент \"" + p + "\" повторяется."); }
-                    names[counter / 2] = p;
+                    //Проверка символов алфавита
+                    if (counter % 2 == 0)
+                    {
+                        if (Array.Exists(names, element => element == p)) { throw new Exception("Алфавит должен состоять из неповторяющихся элементов. Элемент \"" + p + "\" повторяется."); }
+                        names[counter / 2] = p;
+                    }
+                    //Проверка вероятностей алфавита
+                    else
+                    {
+                        try { probabilities[(counter - 1) / 2] = Convert.ToDouble(p); }
+                        catch { throw new Exception("Вероятность \"" + p + "\" не является числом. Возможно следует поменять \".\" на \",\"."); }
+
+                        if (probabilities[(counter - 1) / 2] < 0) { throw new Exception("Вероятность \"" + p + "\" меньше 0, а должна быть больше или равна 0."); }
+
+                        temp += probabilities[(counter - 1) / 2];
+                    }
+
+                    counter++;
                 }
-                //Проверка вероятностей алфавита
-                else
+
+                //Проверка равенства суммы вероятностей и единицы
+                if (!(temp + Math.Pow(10, -10) >= 1 && temp - Math.Pow(10, -10) <= 1)) { throw new Exception("Сумма всех вероятностей должна быть равна 1. Сейчас она равна " + temp + "."); }
+
+                indices = new string[N + N - 1];
+            }
+            else if (mode == 1)
+            {
+                names = text.Split(' ');
+                N = names.Length;
+                probabilities = new double[N + N];
+                code_words = new string[N];
+                indices = new string[N + N - 1];
+
+                probabilities[N + N - 1] = 2;
+                temp = 1.0 / N;
+                for (int i = 0; i < N; i++)
                 {
-                    try { probabilities[(counter - 1) / 2] = Convert.ToDouble(p); }
-                    catch { throw new Exception("Вероятность \"" + p + "\" не является числом. Возможно следует поменять \".\" на \",\"."); }
-
-                    if (probabilities[(counter - 1) / 2] < 0) { throw new Exception("Вероятность \"" + p + "\" меньше 0, а должна быть больше или равна 0."); }
-
-                    temp += probabilities[(counter - 1) / 2];
+                    probabilities[i] = temp;
                 }
-
-                counter++;
             }
 
-            //Проверка равенства суммы вероятностей и единицы
-            if (!(temp + Math.Pow(10, -10) >= 1 && temp - Math.Pow(10, -10) <= 1)) { throw new Exception("Сумма всех вероятностей должна быть равна 1. Сейчас она равна " + temp + "."); }
-
-            indices = new string[N + N - 1];
             used = new bool[N + N - 1];
 
             for (int i = 0; i < N; i++) { indices[i] = Convert.ToString(i); }
@@ -121,7 +140,7 @@ namespace _5_crypto_2_final_ver
                 probabilities[i] = probabilities[min1] + probabilities[min2];
                 if (min1 < min2) { indices[i] = Convert.ToString(min2) + ":" + Convert.ToString(min1); }
                 else { indices[i] = Convert.ToString(min1) + ":" + Convert.ToString(min2); }
-                
+
                 //Найденные вероятности больше не учитываются при поиске следующих самых малых вероятностей
                 used[min1] = true;
                 used[min2] = true;
