@@ -17,14 +17,11 @@
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
 
         <Border
             Grid.Row="0"
             Grid.Column="0"
-            Grid.ColumnSpan="3"
             Background="#FF9BA6A4"
             Margin="4">
             <Viewbox>
@@ -32,61 +29,77 @@
             </Viewbox>
         </Border>
 
-        <Border
+        <StackPanel
             Grid.Row="2"
             Grid.Column="0"
+            Orientation="Horizontal"
+            HorizontalAlignment="Center">
+
+            <Border
             Background="#FF87BFC5"
             Margin="4">
-            <Button
+                <Button
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 Background="#FF87BFC5"
                 Name="MainMenuButton"
                 Click="GoToMainMenu">
-                <Viewbox>
-                    <TextBlock Text="Главное меню"/>
-                </Viewbox>
-            </Button>
-        </Border>
+                    <Viewbox>
+                        <TextBlock Text="Главное меню"/>
+                    </Viewbox>
+                </Button>
+            </Border>
 
-        <Border
-            Grid.Row="2"
-            Grid.Column="1"
+            <Border
             Background="#FFB9C3CB"
             Margin="4">
-            <Button
+                <Button
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 Background="#FF87BFC5"
                 Name="KeyboardInputButton"
                 Click="GoToKeyboardInput">
-                <Viewbox>
-                    <TextBlock Text="Ввод с клавиатуры"/>
-                </Viewbox>
-            </Button>
-        </Border>
+                    <Viewbox>
+                        <TextBlock Text="Ввод с клавиатуры"/>
+                    </Viewbox>
+                </Button>
+            </Border>
 
-        <Border
-            Grid.Row="2"
-            Grid.Column="2"
+            <Border
             Background="#FFB9C3CB"
             Margin="4">
-            <Button
+                <Button
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 Background="#FF87BFC5"
                 Name="FileInputButton"
                 Click="GoToFileInput">
-                <Viewbox>
-                    <TextBlock Text="Ввод из файлов"/>
-                </Viewbox>
-            </Button>
-        </Border>
+                    <Viewbox>
+                        <TextBlock Text="Ввод из файлов"/>
+                    </Viewbox>
+                </Button>
+            </Border>
+
+            <Border
+            Background="#FFB9C3CB"
+            Margin="4">
+                <Button
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Background="#FF87BFC5"
+                Name="NewCodeButton"
+                Click="GoToNewCode">
+                    <Viewbox>
+                        <TextBlock Text="Проверка на четность"/>
+                    </Viewbox>
+                </Button>
+            </Border>
+
+        </StackPanel>
 
         <Frame 
             x:Name="frame" 
             Grid.Row="1"
-            Grid.Column="0"
-            Grid.ColumnSpan="3"/>
+            Grid.Column="0"/>
     </Grid>
 </Page>

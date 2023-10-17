@@ -25,7 +25,11 @@ namespace _5_crypto_2_final_ver
         private void GoToFileInput(object sender, RoutedEventArgs e)
         {
             frame.Content = new FileInput();
+        }
 
+        private void GoToNewCode(object sender, RoutedEventArgs e)
+        {
+            frame.Content = new NewCode();
         }
     }
 
@@ -34,7 +38,7 @@ namespace _5_crypto_2_final_ver
         public readonly int N;
         public readonly double[] probabilities;
         public readonly string[] names;
-        public readonly string[] code_words;
+        public string[] code_words;
         private readonly string[] indices;
         public readonly int max_code_word_length;
         public readonly double average_length;
@@ -115,7 +119,9 @@ namespace _5_crypto_2_final_ver
                 }
                 //Объединение самых малых вероятностей в новую вероятность
                 probabilities[i] = probabilities[min1] + probabilities[min2];
-                indices[i] = Convert.ToString(min1) + ":" + Convert.ToString(min2);
+                if (min1 < min2) { indices[i] = Convert.ToString(min2) + ":" + Convert.ToString(min1); }
+                else { indices[i] = Convert.ToString(min1) + ":" + Convert.ToString(min2); }
+                
                 //Найденные вероятности больше не учитываются при поиске следующих самых малых вероятностей
                 used[min1] = true;
                 used[min2] = true;
@@ -218,6 +224,66 @@ namespace _5_crypto_2_final_ver
             //Если что-то осталось после попытки декодирования, значит сообщение для декодирования записано неверно
             if (code_word != "") { throw new Exception("Текст невозможно декодировать, проверьте правильность ввода и повторите попытку."); }
 
+            return output;
+        }
+
+        public void AddEvenBit()
+        {
+            int temp;
+
+            for (int i = 0; i < N; i++)
+            {
+                temp = 0;
+                foreach(char letter in code_words[i])
+                {
+                    temp += letter - '0';
+                    temp %= 2;
+                }
+                code_words[i] += Convert.ToString(temp);
+            }
+        }
+
+        public string[] DecodeWithMistakes(string input)
+        {
+            string[] output;
+            string decode = "", mistakes = "", code_word;
+            int numberOfCodeWords, bit;
+
+            if (input.Length % (max_code_word_length + 1) != 0) { throw new Exception("Текст невозможно декодировать, проверьте правильность ввода и повторите попытку."); }
+
+            numberOfCodeWords = input.Length / (max_code_word_length + 1);
+            for (int i = 0; i < numberOfCodeWords; i++)
+            {
+                code_word = "";
+                for (int j = i * (max_code_word_length + 1); j < i * (max_code_word_length + 1) + max_code_word_length + 1; j++)
+                {
+                    code_word += input[j];
+                }
+
+                bit = 0;
+                foreach (char letter in code_word)
+                {
+                    bit += letter - '0';
+                    bit %= 2;
+                }
+
+                if (bit != 0) { mistakes += Convert.ToString(i + 1) + ": " + code_word + ". "; }
+                else
+                {
+                    for (int k = 0; k < N; k++)
+                    {
+                        if (code_word == code_words[k])
+                        {
+                            decode += names[k];
+                            break;
+                        }
+                    }
+                }
+            }
+
+            output = new string[2];
+            output[0] = decode;
+            output[1] = mistakes;
             return output;
         }
     }
