@@ -11,12 +11,11 @@ namespace _5_crypto_2_final_ver
     /// <summary>
     /// Пустая страница, которую можно использовать саму по себе или для перехода внутри фрейма.
     /// </summary>
-    public sealed partial class NewCode : Page
+    public sealed partial class HammingCode : Page
     {
-        public string probs_file_name = "probabilities.txt";
         public string input_file_name = "input.txt";
         public string output_file_name = "output.txt";
-        public NewCode()
+        public HammingCode()
         {
             this.InitializeComponent();
             CheckFiles();
@@ -31,39 +30,34 @@ namespace _5_crypto_2_final_ver
             temp = storageFolder.Path;
 
             //Вывод путей к файлам на экран
-            ProbsPathTextBox.Text = temp + @"\" + probs_file_name;
             InputPathTextBox.Text = temp + @"\" + input_file_name;
             OutputPathTextBox.Text = temp + @"\" + output_file_name;
 
             //Если файлов не существует, создать их
-            await storageFolder.CreateFileAsync(probs_file_name, CreationCollisionOption.OpenIfExists);
             await storageFolder.CreateFileAsync(input_file_name, CreationCollisionOption.OpenIfExists);
             await storageFolder.CreateFileAsync(output_file_name, CreationCollisionOption.OpenIfExists);
         }
 
         private async void EncodeFileButton_Click(object sender, RoutedEventArgs e)
         {
-            string output, probs, input;
+            string output, input;
 
             //Получение доступа к нужной папке
             StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
             //Если файлов не существует, создать их
-            StorageFile probs_file = await storageFolder.CreateFileAsync(probs_file_name, CreationCollisionOption.OpenIfExists);
             StorageFile input_file = await storageFolder.CreateFileAsync(input_file_name, CreationCollisionOption.OpenIfExists);
             StorageFile output_file = await storageFolder.CreateFileAsync(output_file_name, CreationCollisionOption.OpenIfExists);
 
             //Получение алфавита и сообщения из файлов
-            probs = await FileIO.ReadTextAsync(probs_file);
             input = await FileIO.ReadTextAsync(input_file);
 
             try
             {
                 //Инициализация класса с использованием текста из файла probabilities.txt
-                StartParameters sp = new StartParameters(probs, 1);
-                sp.AddEvenBit();
+                StartParameters sp = new StartParameters("", 2);
 
                 //Кодирование информации из файла input.txt
-                output = sp.CodeMessage(input);
+                output = sp.EncodeHammingMessage(input);
                 ResultTextBox.Text = output;
 
                 //Запись результата в файл
@@ -100,28 +94,25 @@ namespace _5_crypto_2_final_ver
 
         private async void DecodeFileButton_Click(object sender, RoutedEventArgs e)
         {
-            string probs, input;
+            string input;
             string[] output;
 
             //Получение доступа к нужной папке
             StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
             //Если файлов не существует, создать их
-            StorageFile probs_file = await storageFolder.CreateFileAsync(probs_file_name, CreationCollisionOption.OpenIfExists);
             StorageFile input_file = await storageFolder.CreateFileAsync(input_file_name, CreationCollisionOption.OpenIfExists);
             StorageFile output_file = await storageFolder.CreateFileAsync(output_file_name, CreationCollisionOption.OpenIfExists);
 
             //Получение алфавита и сообщения из файлов
-            probs = await FileIO.ReadTextAsync(probs_file);
             input = await FileIO.ReadTextAsync(input_file);
 
             try
             {
                 //Инициализация класса с использованием текста из файла probabilities.txt
-                StartParameters sp = new StartParameters(probs, 1);
-                sp.AddEvenBit();
+                StartParameters sp = new StartParameters("", 2);
 
                 //Декодирование информации из файла input.txt
-                output = sp.DecodeWithMistakes(input);
+                output = sp.DecodeHammingMessage(input);
                 ResultTextBox.Text = output[0];
                 MistakesTextBox.Text = output[1];
 

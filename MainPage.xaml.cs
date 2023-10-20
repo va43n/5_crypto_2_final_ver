@@ -31,6 +31,11 @@ namespace _5_crypto_2_final_ver
         {
             frame.Content = new NewCode();
         }
+
+        private void GoToHammingCode(object sender, RoutedEventArgs e)
+        {
+            frame.Content = new HammingCode();
+        }
     }
 
     class StartParameters
@@ -40,10 +45,19 @@ namespace _5_crypto_2_final_ver
         public readonly string[] names;
         public string[] code_words;
         private readonly string[] indices;
-        public readonly int max_code_word_length;
+        public readonly int k;
+        public readonly int r;
+        public readonly int n;
         public readonly double average_length;
         public readonly double redundancy;
         public readonly double KraftInequality;
+        public int codeDistance;
+        public double HammingBound;
+        public double PlotkinBound;
+        public int Gilbert_VarshamovBound;
+        public int[] H;
+        public int[] G;
+
 
         public StartParameters(string probs, int mode = 0)
         {
@@ -54,11 +68,12 @@ namespace _5_crypto_2_final_ver
             bool[] used;
             string text = probs;
 
-            //Проверка валидности текста, задающего алфавит
-            if (text == null || !text.Contains(" ")) { throw new Exception("Неправильная запись алфавита. Каждый символ должна сопровождаться вероятностью её появления, между символами и вероятностями должны стоять пробелы"); }
 
             if (mode == 0)
             {
+                //Проверка валидности текста, задающего алфавит
+                if (text == null || !text.Contains(" ")) { throw new Exception("Неправильная запись алфавита. Каждый символ должна сопровождаться вероятностью её появления, между символами и вероятностями должны стоять пробелы"); }
+                
                 //Массив элементов алфавита
                 parameters = text.Split(' ');
                 //Если элементов в алфавите нечетное число, значит пропущен какой-либо элемент
@@ -103,6 +118,9 @@ namespace _5_crypto_2_final_ver
             }
             else if (mode == 1)
             {
+                //Проверка валидности текста, задающего алфавит
+                if (text == null || !text.Contains(" ")) { throw new Exception("Неправильная запись алфавита. Каждый символ должна сопровождаться вероятностью её появления, между символами и вероятностями должны стоять пробелы"); }
+
                 names = text.Split(' ');
                 N = names.Length;
                 probabilities = new double[N + N];
@@ -115,64 +133,107 @@ namespace _5_crypto_2_final_ver
                 {
                     probabilities[i] = temp;
                 }
+
+                r = 1;
             }
-
-            used = new bool[N + N - 1];
-
-            for (int i = 0; i < N; i++) { indices[i] = Convert.ToString(i); }
-
-            //Создание бинарного дерева из имеющегося алфавита
-            for (int i = N; i < 2 * N - 1; i++)
+            else if (mode == 2)
             {
-                min1 = N + N - 1;
-                min2 = N + N - 1;
-                //Поиск двух самых малых вероятностей
-                for (int j = 0; j < i; j++)
+                N = 32;
+                k = 5;
+                n = 9;
+                r = n - k;
+
+                names = new string[] { "А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "Й", "К", "Л", "М", "Н", "О", "П", "Р", "С", "Т", "У", "Ф", "Х", "Ц", "Ч", "Ш", "Щ", "Ъ", "Ы", "Ь", "Э", "Ю", "Я" };
+                code_words = new string[] { "00000", "00001", "00010", "00011", "00100", "00101", "00110", "00111", "01000", "01001", "01010", "01011", "01100", "01101", "01110", "01111", "10000", "10001", "10010", "10011", "10100", "10101", "10110", "10111", "11000", "11001", "11010", "11011", "11100", "11101", "11110", "11111" };
+                H = new int[] { 1, 0, 0, 0, 0, 1, 0, 0, 0,
+                                0, 1, 0, 1, 1, 0, 1, 0, 0,
+                                0, 1, 1, 1, 0, 0, 0, 1, 0,
+                                1, 0, 1, 1, 1, 0, 0, 0, 1 };
+                G = new int[] { 1, 0, 0, 0, 0, 1, 0, 0, 1,
+                                0, 1, 0, 0, 0, 0, 1, 1, 0,
+                                0, 0, 1, 0, 0, 0, 0, 1, 1,
+                                0, 0, 0, 1, 0, 0, 1, 1, 1,
+                                0, 0, 0, 0, 1, 0, 1, 0, 1 };
+
+                string code_word;
+                int t;
+                for (int i = 0; i < N; i++)
                 {
-                    if (probabilities[j] < probabilities[min1] && j != min1 && !used[j])
+                    code_word = "";
+                    for (int j = 0; j < n; j++)
                     {
-                        min2 = min1;
-                        min1 = j;
+                        t = 0;
+                        for (int K = 0; K < k; K++)
+                        {
+                            t = (t + ((code_words[i][K] - '0') * G[K * n + j])) % 2;
+                        }
+                        code_word += t;
                     }
-                    else if (probabilities[j] < probabilities[min2] && j != min1 && !used[j]) { min2 = j; }
+                    code_words[i] = code_word;
                 }
-                //Объединение самых малых вероятностей в новую вероятность
-                probabilities[i] = probabilities[min1] + probabilities[min2];
-                if (min1 < min2) { indices[i] = Convert.ToString(min2) + ":" + Convert.ToString(min1); }
-                else { indices[i] = Convert.ToString(min1) + ":" + Convert.ToString(min2); }
-
-                //Найденные вероятности больше не учитываются при поиске следующих самых малых вероятностей
-                used[min1] = true;
-                used[min2] = true;
             }
 
-            //Обход бинарного дерева с целью получения кодовых слов
-            FindCodeWords(N + N - 2, "");
-
-            //Подсчет характеристик
-            max_code_word_length = 0;
-            KraftInequality = 0;
-            temp = 0;
-            //Получение средней длины и суммы в правой части неравенства Крафта
-            for (int i = 0; i < N; i++)
+            if (mode < 2)
             {
-                temp += code_words[i].Length * probabilities[i];
-                KraftInequality += Math.Pow(2, -code_words[i].Length);
-                if (code_words[i].Length > max_code_word_length) { max_code_word_length = code_words[i].Length; }
-            }
-            average_length = temp;
+                used = new bool[N + N - 1];
 
-            //Поиск избыточности
-            redundancy = 0;
-            for (int i = 0; i < N; i++)
-            {
-                if (probabilities[i] == 0) { continue; }
-                redundancy += probabilities[i] * Math.Log10(probabilities[i]) / Math.Log10(2);
-            }
-            redundancy /= Math.Log10(N) / Math.Log10(2);
-            redundancy += 1;
-            if (redundancy < Math.Pow(10, -10)) { redundancy = 0; }
+                for (int i = 0; i < N; i++) { indices[i] = Convert.ToString(i); }
 
+                //Создание бинарного дерева из имеющегося алфавита
+                for (int i = N; i < 2 * N - 1; i++)
+                {
+                    min1 = N + N - 1;
+                    min2 = N + N - 1;
+                    //Поиск двух самых малых вероятностей
+                    for (int j = 0; j < i; j++)
+                    {
+                        if (probabilities[j] < probabilities[min1] && j != min1 && !used[j])
+                        {
+                            min2 = min1;
+                            min1 = j;
+                        }
+                        else if (probabilities[j] < probabilities[min2] && j != min1 && !used[j]) { min2 = j; }
+                    }
+                    //Объединение самых малых вероятностей в новую вероятность
+                    probabilities[i] = probabilities[min1] + probabilities[min2];
+                    if (min1 < min2) { indices[i] = Convert.ToString(min2) + ":" + Convert.ToString(min1); }
+                    else { indices[i] = Convert.ToString(min1) + ":" + Convert.ToString(min2); }
+
+                    //Найденные вероятности больше не учитываются при поиске следующих самых малых вероятностей
+                    used[min1] = true;
+                    used[min2] = true;
+                }
+
+                //Обход бинарного дерева с целью получения кодовых слов
+                FindCodeWords(N + N - 2, "");
+
+                //Подсчет характеристик
+                k = 0;
+                KraftInequality = 0;
+                temp = 0;
+                //Получение средней длины и суммы в правой части неравенства Крафта
+                for (int i = 0; i < N; i++)
+                {
+                    temp += code_words[i].Length * probabilities[i];
+                    KraftInequality += Math.Pow(2, -code_words[i].Length);
+                    if (code_words[i].Length > k) { k = code_words[i].Length; }
+                }
+                average_length = temp;
+
+                //Поиск избыточности
+                redundancy = 0;
+                for (int i = 0; i < N; i++)
+                {
+                    if (probabilities[i] == 0) { continue; }
+                    redundancy += probabilities[i] * Math.Log10(probabilities[i]) / Math.Log10(2);
+                }
+                redundancy /= Math.Log10(N) / Math.Log10(2);
+                redundancy += 1;
+                if (redundancy < Math.Pow(10, -10)) { redundancy = 0; }
+
+
+                n = k + r;
+            }
         }
 
         private void FindCodeWords(int i, string current_code_word)
@@ -217,6 +278,31 @@ namespace _5_crypto_2_final_ver
             return output;
         }
 
+        public string EncodeHammingMessage(string input)
+        {
+            string text, output = "";
+            bool isElementConsists;
+
+            text = input;
+
+            foreach(char letter in text)
+            {
+                isElementConsists = false;
+                for (int i = 0; i < N; i++)
+                {
+                    if (Convert.ToString(letter) == names[i])
+                    {
+                        isElementConsists = true;
+                        output += code_words[i];
+                        break;
+                    }
+                }
+                if (!isElementConsists) { throw new Exception("Элемента " + letter + " не существует в алфавите."); }
+            }
+
+            return output;
+        }
+
         public string DecodeMessage(string input)
         {
             //Декодирование сообщения
@@ -238,10 +324,119 @@ namespace _5_crypto_2_final_ver
                     }
                 }
                 //Если некоторая строка превышает максимальную длину кодового слова, значит сообщение для декодирования заисано неверно
-                if (code_word.Length == max_code_word_length) { throw new Exception("Текст невозможно декодировать, проверьте правильность ввода и повторите попытку."); }
+                if (code_word.Length == k) { throw new Exception("Текст невозможно декодировать, проверьте правильность ввода и повторите попытку."); }
             }
             //Если что-то осталось после попытки декодирования, значит сообщение для декодирования записано неверно
             if (code_word != "") { throw new Exception("Текст невозможно декодировать, проверьте правильность ввода и повторите попытку."); }
+
+            return output;
+        }
+
+        public string[] DecodeHammingMessage(string input)
+        {
+            string[] output = new string[2];
+            string decode = "", mistakes = "", code_word, str_syndrome;
+            int numberOfCodeWords, temp;
+            int[] syndrome = new int[r];
+            bool isConsistMistakes, isDecodable;
+            string[] keysWords;
+            int[] values;
+            
+
+
+            for (int i = 0; i < input.Length; i++)
+            {
+                if (input[i] - '0' != 0 && input[i] - '0' != 1) { throw new Exception("Сообщение для декодирования содержит какие-то другие символы кроме 0 и 1."); }
+            }
+
+            if (input.Length % n != 0) { throw new Exception("Текст невозможно декодировать, проверьте правильность ввода и повторите попытку."); }
+            numberOfCodeWords = input.Length / n;
+
+            for (int i = 0; i < numberOfCodeWords; i++)
+            {
+                code_word = "";
+                for (int j = i * n; j < i * n + n; j++)
+                {
+                    code_word += input[j];
+                }
+
+                for (int R = 0; R < r; R++)
+                {
+                    temp = 0;
+                    for (int j = 0; j < n; j++)
+                    {
+                        temp = (temp + ((code_word[j] - '0') * H[R * n + j])) % 2;
+                    }
+                    syndrome[R] = temp;
+                }
+
+                isConsistMistakes = false;
+                str_syndrome = "";
+                for (int s = 0; s < r; s++)
+                {
+                    str_syndrome += syndrome[s];
+                    if (syndrome[s] == 1)
+                    {
+                        isConsistMistakes = true;
+                    }
+                }
+                if (isConsistMistakes)
+                {
+
+                    keysWords = new string[Convert.ToInt32(Math.Pow(2, r))];
+                    values = new int[] { -1, 8, 7, 2, 6, 4, 1, 3, 5, 0, -2, -2, -2, -2, -2, -2 };
+                    
+                    for (int j = 0; j < Convert.ToInt32(Math.Pow(2, r)); j++)
+                    {
+                        keysWords[j] = Convert.ToString(j, 2);
+                        while (keysWords[j].Length < r)
+                        {
+                            keysWords[j] = keysWords[j].Insert(0, "0");
+                        }
+                    }
+
+                    mistakes += (i + 1) + ": mistakes in word " + code_word + ", syndrome = ";
+                    for (int j = 0; j < r; j++)
+                    {
+                        mistakes += syndrome[j];
+                    }
+                    mistakes += ", number of mistakes ";
+
+                    for (int j = 0; j < Convert.ToInt32(Math.Pow(2, r)); j++)
+                    {
+                        if (str_syndrome == keysWords[j])
+                        {
+                            if (values[j] >= 0)
+                            {
+                                mistakes += "1, on position " + (values[j] + 1) + ".\n";
+                                if (code_word[values[j]] == '0') { code_word = code_word.Remove(values[j], 1).Insert(values[j], "1"); }
+                                else { code_word = code_word.Remove(values[j], 1).Insert(values[j], "0"); }
+                            }
+                            else if (values[j] == -2)
+                            {
+                                mistakes += "2.\n";
+                            }
+                            break;
+                        }
+                    }
+
+
+                }
+                isDecodable = false;
+                for (int j = 0; j < N; j++)
+                {
+                    if (code_words[j] == code_word)
+                    {
+                        decode += names[j];
+                        isDecodable = true;
+                        break;
+                    }
+                }
+                if(!isDecodable) { decode += "{" + (i + 1) + "}"; }
+            }
+
+            output[0] = decode;
+            output[1] = mistakes;
 
             return output;
         }
@@ -267,14 +462,20 @@ namespace _5_crypto_2_final_ver
             string[] output;
             string decode = "", mistakes = "", code_word;
             int numberOfCodeWords, bit;
+            bool isDecodable;
 
-            if (input.Length % (max_code_word_length + 1) != 0) { throw new Exception("Текст невозможно декодировать, проверьте правильность ввода и повторите попытку."); }
+            for (int i = 0; i < input.Length; i++)
+            {
+                if (input[i] - '0' != 0 && input[i] - '0' != 1) { throw new Exception("Сообщение для декодирования содержит какие-то другие символы кроме 0 и 1."); }
+            }
 
-            numberOfCodeWords = input.Length / (max_code_word_length + 1);
+            if (input.Length % (k + 1) != 0) { throw new Exception("Текст невозможно декодировать, проверьте правильность ввода и повторите попытку."); }
+
+            numberOfCodeWords = input.Length / (k + 1);
             for (int i = 0; i < numberOfCodeWords; i++)
             {
                 code_word = "";
-                for (int j = i * (max_code_word_length + 1); j < i * (max_code_word_length + 1) + max_code_word_length + 1; j++)
+                for (int j = i * (k + 1); j < i * (k + 1) + k + 1; j++)
                 {
                     code_word += input[j];
                 }
@@ -286,17 +487,24 @@ namespace _5_crypto_2_final_ver
                     bit %= 2;
                 }
 
-                if (bit != 0) { mistakes += Convert.ToString(i + 1) + ": " + code_word + ". "; }
+                if (bit != 0)
+                {
+                    mistakes += Convert.ToString(i + 1) + ": " + code_word + ".\n";
+                    decode += "{" + (i + 1) + "}";
+                }
                 else
                 {
-                    for (int k = 0; k < N; k++)
+                    isDecodable = false;
+                    for (int j = 0; j < N; j++)
                     {
-                        if (code_word == code_words[k])
+                        if (code_words[j] == code_word)
                         {
-                            decode += names[k];
+                            decode += names[j];
+                            isDecodable = true;
                             break;
                         }
                     }
+                    if (!isDecodable) { decode += "{" + (i + 1) + "}"; }
                 }
             }
 
@@ -305,5 +513,57 @@ namespace _5_crypto_2_final_ver
             output[1] = mistakes;
             return output;
         }
+
+        public void GetNewCharacteristics()
+        {
+            int temp;
+
+            //Кодовое расстояние кода
+            codeDistance = -1;
+            temp = -1;
+            for (int i = 0; i < N; i++)
+            {
+                for (int j = 0; j < N && i != j; j++)
+                {
+                    temp = 0;
+                    for (int K = 0; K < n; K++)
+                    {
+                        if (code_words[i][K] != code_words[j][K]) { temp += 1; }
+                    }
+                }
+                if ((codeDistance == -1 || codeDistance > temp) && temp != -1) { codeDistance = temp; }
+            }
+
+            //граница Хэмминга
+            HammingBound = 0;
+            for (int i = 0; i <= Math.Floor((codeDistance - 1) / 2.0); i++)
+            {
+                HammingBound += Functions.Factorial(n) / Functions.Factorial(i) / Functions.Factorial(n - i);
+            }
+            HammingBound = Math.Log(HammingBound) / Math.Log(2);
+
+            //граница Плоткина
+            PlotkinBound = n * (Math.Pow(2, k - 1)) / (Math.Pow(2, k) - 1);
+
+            //граница Варшамова-Гильберта
+            Gilbert_VarshamovBound = 0;
+            for (int i = 0; i < codeDistance - 2; i++) { Gilbert_VarshamovBound += Functions.Factorial(n - 1) / Functions.Factorial(i) / Functions.Factorial(n -  1 - i); }
+        }
+
+
+
     }
+
+    public static class Functions
+    {
+        public static int Factorial(int n)
+        {
+            if (n == 0) { return 1; }
+            return n * Factorial(n - 1);
+        }
+    }
+
+
+
+
 }

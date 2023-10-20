@@ -95,6 +95,21 @@
                 </Button>
             </Border>
 
+            <Border
+            Background="#FFB9C3CB"
+            Margin="4">
+                <Button
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Background="#FF87BFC5"
+                Name="HammingCodeButton"
+                Click="GoToHammingCode">
+                    <Viewbox>
+                        <TextBlock Text="Код Хэмминга"/>
+                    </Viewbox>
+                </Button>
+            </Border>
+
         </StackPanel>
 
         <Frame 
