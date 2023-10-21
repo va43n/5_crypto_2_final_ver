@@ -80,8 +80,8 @@ namespace _5_crypto_2_final_ver
                 CharacteristicsTextBox.Text += "Граница Плоткина: " + sp.codeDistance + " <= " + sp.PlotkinBound;
                 if (sp.codeDistance <= sp.PlotkinBound) { CharacteristicsTextBox.Text += ", условие выполняется." + Environment.NewLine; }
                 else { CharacteristicsTextBox.Text += ", условие не выполняется." + Environment.NewLine; }
-                CharacteristicsTextBox.Text += "Граница Варшамова-Гильберта: " + Math.Pow(2, 1) + " > " + sp.Gilbert_VarshamovBound;
-                if (Math.Pow(2, 1) > sp.Gilbert_VarshamovBound) { CharacteristicsTextBox.Text += ", условие выполняется." + Environment.NewLine; }
+                CharacteristicsTextBox.Text += "Граница Варшамова-Гильберта: " + Math.Pow(2, sp.r) + " > " + sp.Gilbert_VarshamovBound;
+                if (Math.Pow(2, sp.r) > sp.Gilbert_VarshamovBound) { CharacteristicsTextBox.Text += ", условие выполняется." + Environment.NewLine; }
                 else { CharacteristicsTextBox.Text += ", условие не выполняется." + Environment.NewLine; }
             }
             catch (Exception exc)
@@ -136,8 +136,8 @@ namespace _5_crypto_2_final_ver
                 CharacteristicsTextBox.Text += "Граница Плоткина: " + sp.codeDistance + " <= " + sp.PlotkinBound;
                 if (sp.codeDistance <= sp.PlotkinBound) { CharacteristicsTextBox.Text += ", условие выполняется." + Environment.NewLine; }
                 else { CharacteristicsTextBox.Text += ", условие не выполняется." + Environment.NewLine; }
-                CharacteristicsTextBox.Text += "Граница Варшамова-Гильберта: " + Math.Pow(2, 1) + " > " + sp.Gilbert_VarshamovBound;
-                if (Math.Pow(2, 1) > sp.Gilbert_VarshamovBound) { CharacteristicsTextBox.Text += ", условие выполняется." + Environment.NewLine; }
+                CharacteristicsTextBox.Text += "Граница Варшамова-Гильберта: " + Math.Pow(2, sp.r) + " > " + sp.Gilbert_VarshamovBound;
+                if (Math.Pow(2, sp.r) > sp.Gilbert_VarshamovBound) { CharacteristicsTextBox.Text += ", условие выполняется." + Environment.NewLine; }
                 else { CharacteristicsTextBox.Text += ", условие не выполняется." + Environment.NewLine; }
             }
             catch (Exception exc)

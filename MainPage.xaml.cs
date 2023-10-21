@@ -119,7 +119,7 @@ namespace _5_crypto_2_final_ver
             else if (mode == 1)
             {
                 //Проверка валидности текста, задающего алфавит
-                if (text == null || !text.Contains(" ")) { throw new Exception("Неправильная запись алфавита. Каждый символ должна сопровождаться вероятностью её появления, между символами и вероятностями должны стоять пробелы"); }
+                if (text == null || !text.Contains(" ")) { throw new Exception("Неправильная запись алфавита. Между символами должны быть пробелы, алфавит должен состоять хотя бы из двух элементов"); }
 
                 names = text.Split(' ');
                 N = names.Length;
@@ -280,11 +280,13 @@ namespace _5_crypto_2_final_ver
 
         public string EncodeHammingMessage(string input)
         {
+            //Кодирование с использованием кодов Хэмминга
             string text, output = "";
             bool isElementConsists;
 
             text = input;
 
+            //Каждый символ нужно найти в алфавите
             foreach(char letter in text)
             {
                 isElementConsists = false;
@@ -292,11 +294,13 @@ namespace _5_crypto_2_final_ver
                 {
                     if (Convert.ToString(letter) == names[i])
                     {
+                        //Если такой символ есть, записываем соответствующее кодовое слово
                         isElementConsists = true;
                         output += code_words[i];
                         break;
                     }
                 }
+                //Если такого символа нет, сообщаем об ошибке
                 if (!isElementConsists) { throw new Exception("Элемента " + letter + " не существует в алфавите."); }
             }
 
@@ -334,6 +338,7 @@ namespace _5_crypto_2_final_ver
 
         public string[] DecodeHammingMessage(string input)
         {
+            //Декодирование с использованием кодов Хэмминга
             string[] output = new string[2];
             string decode = "", mistakes = "", code_word, str_syndrome;
             int numberOfCodeWords, temp;
@@ -341,25 +346,30 @@ namespace _5_crypto_2_final_ver
             bool isConsistMistakes, isDecodable;
             string[] keysWords;
             int[] values;
-            
+            keysWords = new string[Convert.ToInt32(Math.Pow(2, r))];
+            values = new int[] { -1, 8, 7, 2, 6, 4, 1, 3, 5, 0, -2, -2, -2, -2, -2, -2 };
 
 
+            //Проверяем, есть ли лишние символы в последовательности
             for (int i = 0; i < input.Length; i++)
             {
                 if (input[i] - '0' != 0 && input[i] - '0' != 1) { throw new Exception("Сообщение для декодирования содержит какие-то другие символы кроме 0 и 1."); }
             }
 
+            //Проверяем, делится ли последовательность на длину кодового слова
             if (input.Length % n != 0) { throw new Exception("Текст невозможно декодировать, проверьте правильность ввода и повторите попытку."); }
             numberOfCodeWords = input.Length / n;
 
             for (int i = 0; i < numberOfCodeWords; i++)
             {
+                //Берем i-е кодовое слово
                 code_word = "";
                 for (int j = i * n; j < i * n + n; j++)
                 {
                     code_word += input[j];
                 }
 
+                //Вычисляем синдромы для него
                 for (int R = 0; R < r; R++)
                 {
                     temp = 0;
@@ -370,6 +380,7 @@ namespace _5_crypto_2_final_ver
                     syndrome[R] = temp;
                 }
 
+                //Проверяем, есть ли ошибки
                 isConsistMistakes = false;
                 str_syndrome = "";
                 for (int s = 0; s < r; s++)
@@ -380,12 +391,9 @@ namespace _5_crypto_2_final_ver
                         isConsistMistakes = true;
                     }
                 }
+                //Если да то пытаемся либо исправить ошибку, либо просто сообщить об ошибке
                 if (isConsistMistakes)
                 {
-
-                    keysWords = new string[Convert.ToInt32(Math.Pow(2, r))];
-                    values = new int[] { -1, 8, 7, 2, 6, 4, 1, 3, 5, 0, -2, -2, -2, -2, -2, -2 };
-                    
                     for (int j = 0; j < Convert.ToInt32(Math.Pow(2, r)); j++)
                     {
                         keysWords[j] = Convert.ToString(j, 2);
@@ -422,6 +430,7 @@ namespace _5_crypto_2_final_ver
 
 
                 }
+                //Если удалось исправить ошибку либо ее вовсе не было, то запишем соответствующую букву, иначе сообщим об ошибке
                 isDecodable = false;
                 for (int j = 0; j < N; j++)
                 {
@@ -443,10 +452,12 @@ namespace _5_crypto_2_final_ver
 
         public void AddEvenBit()
         {
+            //Добавление бита четности
             int temp;
 
             for (int i = 0; i < N; i++)
             {
+                //Производим операцию сумма по модулю два для каждого кодового слова и добавляем нужный бит четности
                 temp = 0;
                 foreach(char letter in code_words[i])
                 {
@@ -459,27 +470,32 @@ namespace _5_crypto_2_final_ver
 
         public string[] DecodeWithMistakes(string input)
         {
+            //Декодирование сообщения с битом четности
             string[] output;
             string decode = "", mistakes = "", code_word;
             int numberOfCodeWords, bit;
             bool isDecodable;
 
+            //Проверяем, есть ли лишние символы в последовательности
             for (int i = 0; i < input.Length; i++)
             {
                 if (input[i] - '0' != 0 && input[i] - '0' != 1) { throw new Exception("Сообщение для декодирования содержит какие-то другие символы кроме 0 и 1."); }
             }
 
+            //Проверяем, делится ли последовательность на длину кодового слова
             if (input.Length % (k + 1) != 0) { throw new Exception("Текст невозможно декодировать, проверьте правильность ввода и повторите попытку."); }
-
             numberOfCodeWords = input.Length / (k + 1);
+
             for (int i = 0; i < numberOfCodeWords; i++)
             {
+                //Берем i-e кодовое слово
                 code_word = "";
                 for (int j = i * (k + 1); j < i * (k + 1) + k + 1; j++)
                 {
                     code_word += input[j];
                 }
 
+                //Вычисляем бит четности
                 bit = 0;
                 foreach (char letter in code_word)
                 {
@@ -487,11 +503,13 @@ namespace _5_crypto_2_final_ver
                     bit %= 2;
                 }
 
+                //Если кодовое слово нечетное значит есть ошибка
                 if (bit != 0)
                 {
                     mistakes += Convert.ToString(i + 1) + ": " + code_word + ".\n";
                     decode += "{" + (i + 1) + "}";
                 }
+                //Иначе ошибки нет, добавляем соответствующий символ в последовательность
                 else
                 {
                     isDecodable = false;
@@ -516,6 +534,7 @@ namespace _5_crypto_2_final_ver
 
         public void GetNewCharacteristics()
         {
+            //Вычисление новых характеристик
             int temp;
 
             //Кодовое расстояние кода
@@ -547,7 +566,7 @@ namespace _5_crypto_2_final_ver
 
             //граница Варшамова-Гильберта
             Gilbert_VarshamovBound = 0;
-            for (int i = 0; i < codeDistance - 2; i++) { Gilbert_VarshamovBound += Functions.Factorial(n - 1) / Functions.Factorial(i) / Functions.Factorial(n -  1 - i); }
+            for (int i = 0; i <= codeDistance - 2; i++) { Gilbert_VarshamovBound += Functions.Factorial(n - 1) / Functions.Factorial(i) / Functions.Factorial(n -  1 - i); }
         }
 
 
