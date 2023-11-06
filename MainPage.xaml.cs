@@ -36,6 +36,11 @@ namespace _5_crypto_2_final_ver
         {
             frame.Content = new HammingCode();
         }
+
+        private void GoToVigenereCipher(object sender, RoutedEventArgs e)
+        {
+            frame.Content = new VigenereCipher();
+        }
     }
 
     class StartParameters
@@ -573,6 +578,106 @@ namespace _5_crypto_2_final_ver
 
     }
 
+    public class VigenereCipherClass
+    {
+        public int T { get; set; }
+        public int[] NumTkey;
+        public int[] NumInput;
+        public string Output { get; set; }
+        public string Alphabet { get; }
+        public int[] NumAlphabet { get; }
+
+        public VigenereCipherClass()
+        {
+            Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ_";
+            NumAlphabet = new int[Alphabet.Length];
+            for (int i = 0; i < Alphabet.Length; i++) { NumAlphabet[i] = i + 1; }
+        }
+
+        public void GetCharacteristics(string Tkey0, string Input0)
+        {
+            bool isExists;
+            //Проверка размера ключа
+            if (Tkey0.Length == 0) { throw new Exception("Размер ключа должен быть больше 0"); }
+
+            //Проверка букв ключа
+            Array.Resize(ref NumTkey, Tkey0.Length);
+            for (int i = 0; i < Tkey0.Length; i++)
+            {
+                isExists = false;
+                for (int j = 0; j < Alphabet.Length; j++)
+                {
+                    if (Tkey0[i] == Alphabet[j])
+                    {
+                        isExists = true;
+                        NumTkey[i] = NumAlphabet[j];
+                        break;
+                    }
+                }
+                if (!isExists) { throw new Exception("Ключ состоит из букв, не существующих в алфавите"); }
+            }
+
+            //Проверка букв входной последовательности
+            Array.Resize(ref NumInput, Input0.Length);
+            for (int i = 0; i < Input0.Length; i++)
+            {
+                isExists = false;
+                for (int j = 0; j < Alphabet.Length; j++)
+                {
+                    if (Input0[i] == Alphabet[j])
+                    {
+                        isExists = true;
+                        NumInput[i] = NumAlphabet[j];
+                        break;
+                    }
+                }
+                if (!isExists) { throw new Exception("Входная последовательность состоит из букв, не существующих в алфавите"); }
+            }
+            //Получение размера ключа
+            T = Tkey0.Length;
+        }
+
+        public void EncodeDecodeMessage(bool encode)
+        {
+            int[] keyInput = new int[NumInput.Length];
+            int counter = 0, keyCounter = 0;
+
+            //Тиражирование ключа
+            while (counter < keyInput.Length)
+            {
+                keyInput[counter] = NumTkey[keyCounter];
+                keyCounter++;
+                counter++;
+                if (keyCounter == NumTkey.Length) { keyCounter = 0; }
+            }
+
+            Output = "";
+            //Если кодируем
+            if (encode)
+            {
+                for (int i = 0; i < NumInput.Length; i++)
+                {
+                    counter = (NumInput[i] + keyInput[i]) % (Alphabet.Length) - 1;
+                    if (counter < 0) { counter += Alphabet.Length; }
+                    Output += Alphabet[counter];
+                }
+            }
+            //Если декодируем
+            else
+            {
+                for (int i = 0; i < NumInput.Length; i++)
+                {
+                    counter = (NumInput[i] - keyInput[i] + Alphabet.Length) % (Alphabet.Length) - 1;
+                    if (counter < 0) { counter += Alphabet.Length; }
+                    Output += Alphabet[counter];
+                }
+            }
+        }
+
+
+
+    }
+
     public static class Functions
     {
         public static int Factorial(int n)
@@ -581,8 +686,4 @@ namespace _5_crypto_2_final_ver
             return n * Factorial(n - 1);
         }
     }
-
-
-
-
 }

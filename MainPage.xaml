@@ -110,6 +110,21 @@
                 </Button>
             </Border>
 
+            <Border
+            Background="#FFB9C3CB"
+            Margin="4">
+                <Button
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Background="#FF87BFC5"
+                Name="VigenereCipherButton"
+                Click="GoToVigenereCipher">
+                    <Viewbox>
+                        <TextBlock Text="Шифр Виженера"/>
+                    </Viewbox>
+                </Button>
+            </Border>
+
         </StackPanel>
 
         <Frame 
