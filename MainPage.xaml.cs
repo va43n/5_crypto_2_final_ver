@@ -41,6 +41,11 @@ namespace _5_crypto_2_final_ver
         {
             frame.Content = new VigenereCipher();
         }
+
+        private void GoToGenerating(object sender, RoutedEventArgs e)
+        {
+            frame.Content = new Generating();
+        }
     }
 
     class StartParameters
@@ -678,12 +683,163 @@ namespace _5_crypto_2_final_ver
 
     }
 
+    public class GeneratingClass
+    {
+        public int N { get; }
+        public int K { get; }
+        public int L { get; set; }
+        public int[] a { get; set; }
+        public int[] c { get; set; }
+        public int[] x0 { get; set; }
+        public string Alphabet { get; }
+        public string Subsequence { get; set; }
+        public int[] NumbersSubsequence { get; set; }
+
+        public GeneratingClass()
+        {
+            //Задание основных переменных
+            Alphabet = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYy";
+            N = 50;
+            K = 20;
+            a = new int[2];
+            c = new int[2];
+            x0 = new int[2];
+        }
+
+        public void SetParametersAndGenerateSubsequence(string parameters)
+        {
+            //Получение параметров из первого файла и их последовательная обработка
+            string[] temp = parameters.Split(" ");
+            int[] numbers;
+            if (temp.Length != 7) { throw new Exception("В файле с параметрами должно быть 7 элементов: L, a1, a2, c1, c2, x01, x02."); }
+            numbers = new int[5];
+
+            //Проверяем, являются ли первые пять параметров числами
+            for (int i = 0; i < 5; i++)
+            {
+                try
+                {
+                    numbers[i] = Convert.ToInt32(temp[i]);
+                    if (numbers[i] <= 0) { throw new Exception("Параметры L, a, c должны быть положительными."); }
+                }
+                catch { throw new Exception("Значение \"" + temp[i] + "\" " + (i + 1) + "-го параметра не является числом, однако первые пять параметров должны быть числовые."); }
+            }
+
+            L = numbers[0];
+            NumbersSubsequence = new int[L];
+
+            a[0] = numbers[1]; a[1] = numbers[2];
+            c[0] = numbers[3]; c[1] = numbers[4];
+
+            //Пытаемся найти символы из файла в алфавите, если их там нет, выдаем ошибку
+            x0[0] = Alphabet.IndexOf(temp[5]);
+            x0[1] = Alphabet.IndexOf(temp[6]);
+            if (x0[0] == -1 || x0[1] == -1) { throw new Exception("Элементы x01 и x02 должны являться элементами алфавита."); }
+            if (x0[1] >= K) { throw new Exception("Элемент x02 должен входить в алфавит, состоящий из первых K букв начального алфавита."); }
+
+            //запускаем генерацию последовательности
+            GenerateSubsequence();
+        }
+
+        private void GenerateSubsequence()
+        {
+            //генерация последовательности
+            int[] firstSubsequence, secondSubsequence;
+            int[] table = new int[K];
+
+            //находим две псевдослучайные последовательности с помощью ЛКГ
+            firstSubsequence = GenerateLCG(L + K, N, 0);
+            secondSubsequence = GenerateLCG(L, K, 1);
+
+            //заполняем таблицу первыми К элементами первой последовательности
+            for (int k = 0; k < K; k++) { table[k] = firstSubsequence[k]; }
+
+            //выполняем основную логику
+            Subsequence = "";
+            for (int k = 0; k < L; k++)
+            {
+                Subsequence += Alphabet[table[secondSubsequence[k]]];
+                NumbersSubsequence[k] = table[secondSubsequence[k]];
+                table[secondSubsequence[k]] = firstSubsequence[K + k];
+            }
+
+        }
+
+        private int[] GenerateLCG(int length, int maxLetter, int number)
+        {
+            //генерация последовательности с помощью ЛКГ
+            int[] subsequence = new int[length];
+
+            //Используем рекуррентное соотношение
+            subsequence[0] = x0[number];
+            for (int i = 1; i < length; i++) { subsequence[i] = (a[number] * subsequence[i - 1] + c[number]) % maxLetter; }
+
+            return subsequence;
+        }
+
+        public double CheckHypothesis()
+        {
+            //проверка гипотезы
+            double S = 0, temp;
+            int k = 10;
+
+            //считаем количество каждой буквы в последоватеьности
+            int[] countLetters = new int[N];
+            for (int i = 0; i < L; i++) { countLetters[NumbersSubsequence[i]] += 1; }
+
+            //Находим оценку по формуле
+            for (int i = 0; i < k; i++)
+            {
+                temp = 0;
+                for (int j = 0; j < N / k; j++) { temp += countLetters[i * N / k + j]; }
+                S += Math.Pow(temp / L - 1.0 / k, 2) * k;
+            }
+            S *= L;
+
+            return S;
+        }
+
+        public int FindPeriod()
+        {
+            //поиск периода
+            int T = 1;
+            bool isEqual;
+
+            //сначала период равен 1, в цикле мы его последовательно увеличиваем
+            while (T < Math.Min(L / 2, N))
+            {
+                isEqual = true;
+                for (int i = L / 2 - T; i < L / 2; i++)
+                {
+                    //Если хоть в одном элементе последовательность не совадает, то последовательности не равны
+                    if (NumbersSubsequence[i] != NumbersSubsequence[i + T])
+                    {
+                        isEqual = false;
+                        break;
+                    }
+                }
+                //Если все элементы были равны, возвращаем период
+                if (isEqual) { return T; }
+                T += 1;
+            }
+
+            return T;
+        }
+
+    }
+
     public static class Functions
     {
         public static int Factorial(int n)
         {
             if (n == 0) { return 1; }
             return n * Factorial(n - 1);
+        }
+
+        public static string ConvertTo2(int number)
+        {
+            if (number == 1) { return "1"; }
+            return ConvertTo2(number / 2) + (number % 2);
         }
     }
 }

@@ -25,7 +25,7 @@
             Background="#FF9BA6A4"
             Margin="4">
             <Viewbox>
-                <TextBlock Text="Кодирование и декодирование информации алгоритмом Хаффмана"/>
+                <TextBlock Text="Яшков Иван, Гавриленко Андрей, бригада №1"/>
             </Viewbox>
         </Border>
 
@@ -121,6 +121,21 @@
                 Click="GoToVigenereCipher">
                     <Viewbox>
                         <TextBlock Text="Шифр Виженера"/>
+                    </Viewbox>
+                </Button>
+            </Border>
+
+            <Border
+            Background="#FFB9C3CB"
+            Margin="4">
+                <Button
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Background="#FF87BFC5"
+                Name="GeneratingButton"
+                Click="GoToGenerating">
+                    <Viewbox>
+                        <TextBlock Text="Генерация послед."/>
                     </Viewbox>
                 </Button>
             </Border>

@@ -122,6 +122,9 @@
     <Compile Include="FileInput.xaml.cs">
       <DependentUpon>FileInput.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Generating.xaml.cs">
+      <DependentUpon>Generating.xaml</DependentUpon>
+    </Compile>
     <Compile Include="HammingCode.xaml.cs">
       <DependentUpon>HammingCode.xaml</DependentUpon>
     </Compile>
@@ -163,6 +166,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="FileInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Generating.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
