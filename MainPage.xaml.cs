@@ -1,6 +1,7 @@
 ﻿using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using System.Collections.Generic;
 
 namespace _5_crypto_2_final_ver
 {
@@ -45,6 +46,11 @@ namespace _5_crypto_2_final_ver
         private void GoToGenerating(object sender, RoutedEventArgs e)
         {
             frame.Content = new Generating();
+        }
+
+        private void GoToGeneratingPrimeNumbers(object sender, RoutedEventArgs e)
+        {
+            frame.Content = new GeneratingPrimeNumbers();
         }
     }
 
@@ -827,6 +833,109 @@ namespace _5_crypto_2_final_ver
         }
 
     }
+
+
+    public class GeneratingPrimeNumbersClass
+    {
+        public int PrimeNumber { get; set; }
+        public List<int> AllNumbers { get; set; }
+        private int BitDepth { get; set; }
+        private int k { get; set; }
+        public double Time { get; set; }
+        public int Iterations { get; set; }
+
+        public GeneratingPrimeNumbersClass()
+        {
+            AllNumbers = new List<int>();
+        }
+
+        public void SetCharacteristicsAndGenerate(string input)
+        {
+            string[] characteristics = input.Split(" ");
+            int[] numbers = new int[2];
+            int temp = -2;
+            bool isPrime = false;
+
+            if (characteristics.Length != 2) { throw new Exception("Во входном файле должно быть два параметра: разрядность числа и количество повторений теста"); }
+
+            for (int i = 0; i < characteristics.Length; i++)
+            {
+                try
+                {
+                    numbers[i] = Convert.ToInt32(characteristics[i]);
+                    if (numbers[i] <= 0) { throw new Exception("Оба параметра должны быть положительными."); }
+                }
+                catch { throw new Exception("Значение " + characteristics[i] + " не является числовым."); }
+            }
+
+            BitDepth = numbers[0];
+            k = numbers[1];
+
+            while (!isPrime)
+            {
+                temp = GenerateNumber();
+                AllNumbers.Add(temp);
+                isPrime = CheckPrimeNumber(temp);
+            }
+            PrimeNumber = temp;
+            Iterations = AllNumbers.Count;
+        }
+
+        private int GenerateNumber()
+        {
+            var rand = new Random();
+            int number = rand.Next(Convert.ToInt32(Math.Pow(10, BitDepth - 1)), Convert.ToInt32(Math.Pow(10, BitDepth)));
+
+            return (number % 2 == 1) ? number : number + 1;
+        }
+
+        private bool CheckPrimeNumber(int number)
+        {
+            var rand = new Random();
+
+            int s = 0, t, z;
+            int a = number - 1;
+
+            while (a % 2 == 0)
+            {
+                a /= 2;
+                s += 1;
+            }
+            t = (number - 1) / Convert.ToInt32(Math.Pow(2, s));
+
+            for (int i = 0; i < k; i++)
+            {
+                for (int j = 0; j < number; j++)
+                {
+                    a = rand.Next(2, number);
+                    if (GCD(a, number) != 1) { return false; }
+
+                    z = Convert.ToInt32(Math.Pow(a, t)) % number;
+                    if (Math.Abs(z) == 1) { continue; }
+
+                    for (int S = 0; S < s; S++)
+                    {
+                        z = Convert.ToInt32(Math.Pow(a, Math.Pow(2, S) * t)) % number;
+                        if (z == -1) { continue; }
+                    }
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private int GCD(int n1, int n2)
+        {
+            while(n1 != n2)
+            {
+                if (n1 > n2) { n1 -= n2; }
+                else { n2 -= n1; }
+            }
+            return n1;
+        }
+    }
+
 
     public static class Functions
     {

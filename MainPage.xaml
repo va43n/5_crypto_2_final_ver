@@ -140,6 +140,21 @@
                 </Button>
             </Border>
 
+            <Border
+            Background="#FFB9C3CB"
+            Margin="4">
+                <Button
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Background="#FF87BFC5"
+                Name="GeneratingPrimeNumbersButton"
+                Click="GoToGeneratingPrimeNumbers">
+                    <Viewbox>
+                        <TextBlock Text="Простые числа"/>
+                    </Viewbox>
+                </Button>
+            </Border>
+
         </StackPanel>
 
         <Frame 

@@ -125,6 +125,9 @@
     <Compile Include="Generating.xaml.cs">
       <DependentUpon>Generating.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GeneratingPrimeNumbers.xaml.cs">
+      <DependentUpon>GeneratingPrimeNumbers.xaml</DependentUpon>
+    </Compile>
     <Compile Include="HammingCode.xaml.cs">
       <DependentUpon>HammingCode.xaml</DependentUpon>
     </Compile>
@@ -170,6 +173,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Generating.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GeneratingPrimeNumbers.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
