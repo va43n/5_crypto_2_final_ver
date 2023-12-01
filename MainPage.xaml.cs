@@ -841,7 +841,6 @@ namespace _5_crypto_2_final_ver
         public List<int> AllNumbers { get; set; }
         private int BitDepth { get; set; }
         private int k { get; set; }
-        public double Time { get; set; }
         public int Iterations { get; set; }
 
         public GeneratingPrimeNumbersClass()
@@ -851,6 +850,11 @@ namespace _5_crypto_2_final_ver
 
         public void SetCharacteristicsAndGenerate(string input)
         {
+            //основная функция, обрабатывающая ввод Пользвателя и вызывающая генерацию чисел и тесты
+            AllNumbers.Clear();
+            Iterations = 0;
+            PrimeNumber = -1;
+
             string[] characteristics = input.Split(" ");
             int[] numbers = new int[2];
             int temp = -2;
@@ -858,21 +862,25 @@ namespace _5_crypto_2_final_ver
 
             if (characteristics.Length != 2) { throw new Exception("Во входном файле должно быть два параметра: разрядность числа и количество повторений теста"); }
 
+            //Проверка чисел на натуральность
             for (int i = 0; i < characteristics.Length; i++)
             {
                 try
                 {
                     numbers[i] = Convert.ToInt32(characteristics[i]);
-                    if (numbers[i] <= 0) { throw new Exception("Оба параметра должны быть положительными."); }
+                    if (numbers[i] <= 0) { throw new Exception("Оба параметра должны быть натуральными числами."); }
                 }
-                catch { throw new Exception("Значение " + characteristics[i] + " не является числовым."); }
+                catch (FormatException e) { throw new Exception("Значение " + characteristics[i] + " не является числовым."); }
             }
 
+            //задание основных параметров
             BitDepth = numbers[0];
             k = numbers[1];
 
+            //запуск основного цикла
             while (!isPrime)
             {
+                //генерация числа, его запись в список, проверка на простоту
                 temp = GenerateNumber();
                 AllNumbers.Add(temp);
                 isPrime = CheckPrimeNumber(temp);
@@ -883,19 +891,23 @@ namespace _5_crypto_2_final_ver
 
         private int GenerateNumber()
         {
-            var rand = new Random();
+            //генерация чисел
+            Random rand = new Random();
             int number = rand.Next(Convert.ToInt32(Math.Pow(10, BitDepth - 1)), Convert.ToInt32(Math.Pow(10, BitDepth)));
-
+            //получение нечетного числа
             return (number % 2 == 1) ? number : number + 1;
         }
 
         private bool CheckPrimeNumber(int number)
         {
-            var rand = new Random();
+            //тест Рабина-Миллера
+            Random rand = new Random();
 
             int s = 0, t, z;
             int a = number - 1;
+            bool isEqual;
 
+            //получение S и t - шаг 0
             while (a % 2 == 0)
             {
                 a /= 2;
@@ -903,30 +915,45 @@ namespace _5_crypto_2_final_ver
             }
             t = (number - 1) / Convert.ToInt32(Math.Pow(2, s));
 
+            //остальные шаги алгоритма
             for (int i = 0; i < k; i++)
             {
-                for (int j = 0; j < number; j++)
+                a = rand.Next(2, number);
+                if (GCD(a, number) != 1) { return false; }
+
+                z = MOD(a, t, number);
+                if (z == 1 || z == number - 1) { continue; }
+
+                isEqual = false;
+                for (int S = 1; S < s; S++)
                 {
-                    a = rand.Next(2, number);
-                    if (GCD(a, number) != 1) { return false; }
-
-                    z = Convert.ToInt32(Math.Pow(a, t)) % number;
-                    if (Math.Abs(z) == 1) { continue; }
-
-                    for (int S = 0; S < s; S++)
+                    z = MOD(a, Convert.ToInt32(Math.Pow(2, S) * t), number);
+                    if (z == number - 1)
                     {
-                        z = Convert.ToInt32(Math.Pow(a, Math.Pow(2, S) * t)) % number;
-                        if (z == -1) { continue; }
+                        isEqual = true;
+                        break;
                     }
-                    return false;
                 }
+                if (isEqual) { continue; }
+                return false;
             }
 
             return true;
         }
 
+        private int MOD(int a, int power, int n)
+        {
+            //Получение остатка для большого числа
+            int c = 1;
+
+            for (int p = 1; p < power + 1; p++) { c = (c * a) % n; }
+
+            return c;
+        }
+
         private int GCD(int n1, int n2)
         {
+            //нахождение НОД по методу Евклида
             while(n1 != n2)
             {
                 if (n1 > n2) { n1 -= n2; }

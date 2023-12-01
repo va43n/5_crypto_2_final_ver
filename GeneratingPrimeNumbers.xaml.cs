@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Popups;
@@ -13,6 +14,7 @@ namespace _5_crypto_2_final_ver
         public string probs_file_name = "probabilities.txt";
         public string output_file_name = "output.txt";
         GeneratingPrimeNumbersClass pn = new GeneratingPrimeNumbersClass();
+        Stopwatch stopwatch = new Stopwatch();
 
         public GeneratingPrimeNumbers()
         {
@@ -41,8 +43,9 @@ namespace _5_crypto_2_final_ver
         private async void GenerateButton_Click(object sender, RoutedEventArgs e)
         {
             //Функция, вызывающаяся при нажатии на кнопку "Сгенерировать простое число"
-            string parameters, output;
+            string parameters, output, numbers;
             int result;
+            double time;
 
             //Получение доступа к нужной папке
             StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
@@ -54,18 +57,25 @@ namespace _5_crypto_2_final_ver
             {
                 //Получение параметров из первого файла и выполнение основной функции класса
                 parameters = await FileIO.ReadTextAsync(probs_file);
+                //замер времени
+                stopwatch.Restart();
                 pn.SetCharacteristicsAndGenerate(parameters);
+                stopwatch.Stop();
+                time = stopwatch.ElapsedMilliseconds;
+
                 result = pn.PrimeNumber;
 
                 //запись результата в файл и на экран
-                output = "Полученное простое число: " + result + ". Результат был получен за время - " + "0" + ". Количество проверенных чисел, включая результирующее, равно " + pn.Iterations + Environment.NewLine + "Все числа, подвергшиеся проверке: ";
+                output = "Полученное простое число: " + result + ". Результат был получен за время - " + Convert.ToDouble(time) / 1000 + " c." + Environment.NewLine;
+                numbers = "Количество проверенных чисел, включая результирующее, равно " + pn.Iterations + ". Все числа, подвергшиеся проверке: " + Environment.NewLine;
                 foreach (int num in pn.AllNumbers)
                 {
-                    output += num + " ";
+                    numbers += num + " ";
                 }
 
                 ResultTextBox.Text = output;
-                await FileIO.WriteTextAsync(output_file, output);
+                TheoremTextBox.Text = numbers;
+                await FileIO.WriteTextAsync(output_file, output + numbers);
             }
             catch (Exception exc)
             {
