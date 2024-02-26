@@ -52,6 +52,11 @@ namespace _5_crypto_2_final_ver
         {
             frame.Content = new GeneratingPrimeNumbers();
         }
+
+        private void GoToLenstraMethod(object sender, RoutedEventArgs e)
+        {
+            frame.Content = new LenstraMethod();
+        }
     }
 
     class StartParameters
@@ -840,7 +845,7 @@ namespace _5_crypto_2_final_ver
         public int PrimeNumber { get; set; }
         public List<int> AllNumbers { get; set; }
         private int BitDepth { get; set; }
-        private int k { get; set; }
+        public int k { get; set; }
         public int Iterations { get; set; }
 
         public GeneratingPrimeNumbersClass()
@@ -898,7 +903,7 @@ namespace _5_crypto_2_final_ver
             return (number % 2 == 1) ? number : number + 1;
         }
 
-        private bool CheckPrimeNumber(int number)
+        public bool CheckPrimeNumber(int number)
         {
             //тест Рабина-Миллера
             Random rand = new Random();
@@ -919,7 +924,7 @@ namespace _5_crypto_2_final_ver
             for (int i = 0; i < k; i++)
             {
                 a = rand.Next(2, number);
-                if (GCD(a, number) != 1) { return false; }
+                if (Functions.GCD(a, number) != 1) { return false; }
 
                 z = MOD(a, t, number);
                 if (z == 1 || z == number - 1) { continue; }
@@ -950,19 +955,215 @@ namespace _5_crypto_2_final_ver
 
             return c;
         }
-
-        private int GCD(int n1, int n2)
-        {
-            //нахождение НОД по методу Евклида
-            while(n1 != n2)
-            {
-                if (n1 > n2) { n1 -= n2; }
-                else { n2 -= n1; }
-            }
-            return n1;
-        }
     }
 
+    public class LenstraMethod_Class
+    {
+        private GeneratingPrimeNumbersClass generatingPrimeNumbers;
+        public List<int> dividers;
+        public int num;
+
+        public LenstraMethod_Class()
+        {
+            generatingPrimeNumbers = new GeneratingPrimeNumbersClass();
+            generatingPrimeNumbers.k = 10;
+            dividers = new List<int>();
+        }
+
+        public void CheckIfPrimeNumber(string input)
+        {
+            int number;
+
+            try
+            {
+                number = Convert.ToInt32(input);
+            }
+            catch
+            {
+                throw new Exception("Значение " + input + " не является числовым");
+            }
+
+            if (number <= 3)
+            {
+                throw new Exception("Число должно быть больше 3");
+            }
+            else if (generatingPrimeNumbers.CheckPrimeNumber(number))
+            {
+                throw new Exception("Число " + input + " простое");
+            }
+
+            num = number;
+
+            FindDividers(num);
+        }
+
+        private void FindDividers(int n)
+        {
+            List<int[]> numbers = new List<int[]>();
+            List<int> c = new List<int>();
+            int r, s, r_star, r_;
+            int q;
+            int iterations;
+            int numberOfResults, c_temp, possibleValue;
+            double[] x = new double[2], y = new double[2];
+            double temp;
+            double eps = Math.Pow(10, -10);
+
+            if (n % 2 == 0)
+            {
+                if (dividers.IndexOf(2) == -1)
+                    dividers.Add(2);
+                if (n != 2)
+                {
+                    n /= 2;
+                    if (generatingPrimeNumbers.CheckPrimeNumber(n))
+                    {
+                        if (dividers.IndexOf(n) == -1) { dividers.Add(n); }
+                    }
+                    else
+                        FindDividers(n);
+                    return;
+                }
+            }
+
+            //s = Convert.ToInt32(Math.Floor(Math.Pow(n, 1.0 / 3.0)) + 1);
+            s = n - 1;
+
+            for (int R = s - 1; R >= 1; R--)
+            {
+                if (Functions.GCD(R, s) == 1)
+                {
+                    iterations = 0;
+                    r = R;
+
+                    r_star = Functions.EuclideanAlgorithm(r, 1, s);
+                    while (r_star < 0)
+                        r_star += s;
+
+                    r_ = (r_star * n) % s;
+
+                    numbers.Add(new int[3] { s, 0, 0 });
+
+                    iterations++;
+                    numbers.Add(new int[3]);
+
+                    numbers[1][0] = (r_ * r_star) % s;
+                    numbers[1][1] = 1;
+                    numbers[1][2] = ((n - r * r_) / s * r_star) % s;
+
+                    do
+                    {
+                        iterations++;
+                        numbers.Add(new int[3]);
+
+                        if (numbers[1][0] == 0 && iterations % 2 == 0)
+                            q = 0;
+                        else
+                            q = numbers[0][0] / numbers[1][0];
+
+                        numbers[2][0] = numbers[0][0] - q * numbers[1][0];
+                        numbers[2][1] = numbers[0][1] - q * numbers[1][1];
+                        numbers[2][2] = numbers[0][2] - q * numbers[1][2];
+                        while (numbers[2][2] < 0)
+                            numbers[2][2] += s;
+                        if (numbers[2][2] > 0)
+                            numbers[2][2] = numbers[2][2] % s;
+
+                        if (iterations % 2 == 0)
+                        {
+                            c.Add(numbers[2][2] % s);
+                            c.Add(numbers[2][2]);
+                            if (numbers[2][2] > 0)
+                            {
+                                while (c[1] > 0)
+                                    c[1] -= s;
+                            }
+                            else
+                            {
+                                while (c[1] < 0)
+                                    c[1] += s;
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 2 * numbers[2][0] * numbers[2][1]; i <= n / (s * s) + numbers[2][0] * numbers[2][1]; i++)
+                            {
+                                c_temp = i;
+                                if (c_temp > 0)
+                                {
+                                    while (c_temp > s)
+                                        c_temp -= s;
+                                    if (c_temp == numbers[2][2])
+                                        c.Add(c_temp);
+                                    else if (c_temp - s == numbers[2][2])
+                                        c.Add(c_temp - s);
+                                }
+                                else
+                                {
+                                    while (c_temp < 0)
+                                        c_temp += s;
+                                    if (c_temp == numbers[2][2])
+                                        c.Add(c_temp);
+                                    else if (c_temp - s == numbers[2][2])
+                                        c.Add(c_temp - s);
+                                }
+                            }
+                        }
+
+                        numbers.RemoveAt(0);
+                        for (int i = 0; i < c.Count; i++)
+                        {
+                            if (numbers[1][0] == 0)
+                            {
+                                numberOfResults = 1;
+                                y[0] = Convert.ToDouble(c[i]) / numbers[1][1];
+                                x[0] = Convert.ToDouble(numbers[1][1] * n - r * c[i] * s - numbers[1][1] * r * r_) / (c[i] * s * s + numbers[1][1] * s * r_);
+                            }
+                            else
+                            {
+                                numberOfResults = 2;
+                                y[0] = -(s * s * c[i] - s * r_ * numbers[1][1] + s * r * numbers[1][0]);
+                                temp = Math.Sqrt(Math.Pow(s * s * c[i] - s * r_ * numbers[1][1] + s * r * numbers[1][0], 2) + 4 * (s * s * numbers[1][1]) * (s * c[i] * r_ + r * r_ * numbers[1][0] - n * numbers[1][0]));
+                                y[1] = (y[0] - temp) / (-2 * numbers[1][1] * s * s);
+                                y[0] = (y[0] + temp) / (-2 * numbers[1][1] * s * s);
+
+                                x[0] = (c[i] - y[0] * numbers[1][1]) / numbers[1][0];
+                                x[1] = (c[i] - y[1] * numbers[1][1]) / numbers[1][0];
+                            }
+
+                            for (int j = 0; j < numberOfResults; j++)
+                            {
+                                if (x[j] >= 0 && y[j] >= 0 && Math.Abs(x[j] - Math.Round(x[j])) < eps && Math.Abs(y[j] - Math.Round(y[j])) < eps)
+                                {
+                                    possibleValue = Convert.ToInt32(Math.Floor(x[j]) * s + r);
+                                    if (dividers.IndexOf(possibleValue) == -1 && possibleValue != n)
+                                    {
+                                        if (generatingPrimeNumbers.CheckPrimeNumber(possibleValue))
+                                            dividers.Add(possibleValue);
+                                        else
+                                            FindDividers(possibleValue);
+
+                                        possibleValue = 1;
+                                        for (int k = 0; k < dividers.Count; k++)
+                                            possibleValue *= dividers[k];
+                                        if (possibleValue == n)
+                                            return;
+                                    }
+                                    else
+                                        continue;
+                                }
+                            }
+                        }
+                        c.Clear();
+                    }
+                    while (numbers[1][0] != 0);
+                }
+                numbers.Clear();
+            }
+
+            
+        }
+    }
 
     public static class Functions
     {
@@ -976,6 +1177,35 @@ namespace _5_crypto_2_final_ver
         {
             if (number == 1) { return "1"; }
             return ConvertTo2(number / 2) + (number % 2);
+        }
+
+        public static int GCD(int n1, int n2)
+        {
+            //нахождение НОД по методу Евклида
+            while (n1 != n2)
+            {
+                if (n1 > n2) { n1 -= n2; }
+                else { n2 -= n1; }
+            }
+            return n1;
+        }
+
+        public static int EuclideanAlgorithm(int a, int b, int n)
+        {
+            int[]   y = new int[3] { 1, 0, n }, 
+                    z = new int[3] { 0, 1, a }, 
+                    t = new int[3] { 0, 0, 0 };
+            int q;
+
+            while (z[2] != 0)
+            {
+                q = (y[2] - y[2] % z[2]) / z[2];
+                for (int i = 0; i < 3; i++) { t[i] = z[i]; }
+                for (int i = 0; i < 3; i++) { z[i] = y[i] - q * z[i]; }
+                for (int i = 0; i < 3; i++) { y[i] = t[i]; }
+            }
+
+            return (b * y[1]) % n;
         }
     }
 }

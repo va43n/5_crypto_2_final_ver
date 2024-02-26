@@ -11,7 +11,8 @@
     <Grid Background="#FFB9C5C3">
         <Grid.RowDefinitions>
             <RowDefinition Height="0.5*"/>
-            <RowDefinition Height="9*"/>
+            <RowDefinition Height="8.5*"/>
+            <RowDefinition Height="0.5*"/>
             <RowDefinition Height="0.5*"/>
         </Grid.RowDefinitions>
 
@@ -19,21 +20,18 @@
             <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
 
-        <Border
-            Grid.Row="0"
-            Grid.Column="0"
+        <StackPanel
+        Grid.Row="0"
+        Grid.Column="0"
+        Orientation="Horizontal"
+        HorizontalAlignment="Center">
+            <Border
             Background="#FF9BA6A4"
             Margin="4">
-            <Viewbox>
-                <TextBlock Text="Яшков Иван, Гавриленко Андрей, бригада №1"/>
-            </Viewbox>
-        </Border>
-
-        <StackPanel
-            Grid.Row="2"
-            Grid.Column="0"
-            Orientation="Horizontal"
-            HorizontalAlignment="Center">
+                <Viewbox>
+                    <TextBlock Text="Яшков Иван, Гавриленко Андрей, бригада №3"/>
+                </Viewbox>
+            </Border>
 
             <Border
             Background="#FF87BFC5"
@@ -48,6 +46,23 @@
                         <TextBlock Text="Главное меню"/>
                     </Viewbox>
                 </Button>
+            </Border>
+        </StackPanel>
+
+        
+
+        <StackPanel
+            Grid.Row="2"
+            Grid.Column="0"
+            Orientation="Horizontal"
+            HorizontalAlignment="Center">
+
+            <Border
+            Background="#FF9BA6A4"
+            Margin="4">
+                <Viewbox>
+                    <TextBlock Text="5 семестр"/>
+                </Viewbox>
             </Border>
 
             <Border
@@ -157,6 +172,36 @@
 
         </StackPanel>
 
+        <StackPanel
+            Grid.Row="3"
+            Grid.Column="0"
+            Orientation="Horizontal"
+            HorizontalAlignment="Center">
+
+            <Border
+            Background="#FF9BA6A4"
+            Margin="4">
+                <Viewbox>
+                    <TextBlock Text="6 семестр"/>
+                </Viewbox>
+            </Border>
+
+            <Border
+            Background="#FF87BFC5"
+            Margin="4">
+                <Button
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Background="#FF87BFC5"
+                Name="LenstraMethod"
+                Click="GoToLenstraMethod">
+                    <Viewbox>
+                        <TextBlock Text="Метод Ленстры"/>
+                    </Viewbox>
+                </Button>
+            </Border>
+        </StackPanel>
+        
         <Frame 
             x:Name="frame" 
             Grid.Row="1"
