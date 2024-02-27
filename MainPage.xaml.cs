@@ -1001,7 +1001,8 @@ namespace _5_crypto_2_final_ver
         {
             List<int[]> numbers = new List<int[]>();
             List<int> c = new List<int>();
-            int r, s, r_star, r_;
+            int S, r_star, r_;
+            int s = 0;
             int q;
             int iterations;
             int numberOfResults, c_temp, possibleValue;
@@ -1026,122 +1027,126 @@ namespace _5_crypto_2_final_ver
                 }
             }
 
-            //s = Convert.ToInt32(Math.Floor(Math.Pow(n, 1.0 / 3.0)) + 1);
-            s = n - 1;
+            S = Convert.ToInt32(Math.Floor(Math.Pow(n, 1.0 / 3.0)) + 1);
 
-            for (int R = s - 1; R >= 1; R--)
+            for (int i = n - 1; i >= S; i--)
             {
-                if (Functions.GCD(R, s) == 1)
+                if (generatingPrimeNumbers.CheckPrimeNumber(i))
                 {
-                    iterations = 0;
-                    r = R;
+                    s = i;
+                    break;
+                }
+            }
+            
+            for (int r = s - 1; r >= 1; r--)
+            {
+                iterations = 0;
 
-                    r_star = Functions.EuclideanAlgorithm(r, 1, s);
-                    while (r_star < 0)
-                        r_star += s;
+                r_star = Functions.EuclideanAlgorithm(r, 1, s);
+                while (r_star < 0)
+                    r_star += s;
 
-                    r_ = (r_star * n) % s;
+                r_ = (r_star * n) % s;
 
-                    numbers.Add(new int[3] { s, 0, 0 });
+                numbers.Add(new int[3] { s, 0, 0 });
 
+                iterations++;
+                numbers.Add(new int[3]);
+
+                numbers[1][0] = (r_ * r_star) % s;
+                numbers[1][1] = 1;
+                numbers[1][2] = ((n - r * r_) / s * r_star) % s;
+
+                do
+                {
                     iterations++;
                     numbers.Add(new int[3]);
 
-                    numbers[1][0] = (r_ * r_star) % s;
-                    numbers[1][1] = 1;
-                    numbers[1][2] = ((n - r * r_) / s * r_star) % s;
+                    if (numbers[1][0] == 0 && iterations % 2 == 0)
+                        q = 0;
+                    else
+                        q = numbers[0][0] / numbers[1][0];
 
-                    do
+                    numbers[2][0] = numbers[0][0] - q * numbers[1][0];
+                    numbers[2][1] = numbers[0][1] - q * numbers[1][1];
+                    numbers[2][2] = numbers[0][2] - q * numbers[1][2];
+                    while (numbers[2][2] < 0)
+                        numbers[2][2] += s;
+                    if (numbers[2][2] > 0)
+                        numbers[2][2] = numbers[2][2] % s;
+
+                    if (iterations % 2 == 0)
                     {
-                        iterations++;
-                        numbers.Add(new int[3]);
-
-                        if (numbers[1][0] == 0 && iterations % 2 == 0)
-                            q = 0;
-                        else
-                            q = numbers[0][0] / numbers[1][0];
-
-                        numbers[2][0] = numbers[0][0] - q * numbers[1][0];
-                        numbers[2][1] = numbers[0][1] - q * numbers[1][1];
-                        numbers[2][2] = numbers[0][2] - q * numbers[1][2];
-                        while (numbers[2][2] < 0)
-                            numbers[2][2] += s;
+                        c.Add(numbers[2][2] % s);
+                        c.Add(numbers[2][2]);
                         if (numbers[2][2] > 0)
-                            numbers[2][2] = numbers[2][2] % s;
-
-                        if (iterations % 2 == 0)
                         {
-                            c.Add(numbers[2][2] % s);
-                            c.Add(numbers[2][2]);
-                            if (numbers[2][2] > 0)
-                            {
-                                while (c[1] > 0)
-                                    c[1] -= s;
-                            }
-                            else
-                            {
-                                while (c[1] < 0)
-                                    c[1] += s;
-                            }
+                            while (c[1] > 0)
+                                c[1] -= s;
                         }
                         else
                         {
-                            for (int i = 2 * numbers[2][0] * numbers[2][1]; i <= n / (s * s) + numbers[2][0] * numbers[2][1]; i++)
-                            {
-                                c_temp = i;
-                                if (c_temp > 0)
-                                {
-                                    while (c_temp > s)
-                                        c_temp -= s;
-                                    if (c_temp == numbers[2][2])
-                                        c.Add(c_temp);
-                                    else if (c_temp - s == numbers[2][2])
-                                        c.Add(c_temp - s);
-                                }
-                                else
-                                {
-                                    while (c_temp < 0)
-                                        c_temp += s;
-                                    if (c_temp == numbers[2][2])
-                                        c.Add(c_temp);
-                                    else if (c_temp - s == numbers[2][2])
-                                        c.Add(c_temp - s);
-                                }
-                            }
+                            while (c[1] < 0)
+                                c[1] += s;
                         }
-
-                        numbers.RemoveAt(0);
-                        for (int i = 0; i < c.Count; i++)
+                    }
+                    else
+                    {
+                        for (int i = 2 * numbers[2][0] * numbers[2][1]; i <= n / (s * s) + numbers[2][0] * numbers[2][1]; i++)
                         {
-                            if (numbers[1][0] == 0)
+                            c_temp = i;
+                            if (c_temp > 0)
                             {
-                                numberOfResults = 1;
-                                y[0] = Convert.ToDouble(c[i]) / numbers[1][1];
-                                x[0] = Convert.ToDouble(numbers[1][1] * n - r * c[i] * s - numbers[1][1] * r * r_) / (c[i] * s * s + numbers[1][1] * s * r_);
+                                while (c_temp >= s)
+                                    c_temp -= s;
+                                if (c_temp == numbers[2][2])
+                                    c.Add(c_temp);
+                                else if (c_temp - s == numbers[2][2])
+                                    c.Add(c_temp - s);
                             }
                             else
                             {
-                                numberOfResults = 2;
-                                y[0] = -(s * s * c[i] - s * r_ * numbers[1][1] + s * r * numbers[1][0]);
-                                temp = Math.Sqrt(Math.Pow(s * s * c[i] - s * r_ * numbers[1][1] + s * r * numbers[1][0], 2) + 4 * (s * s * numbers[1][1]) * (s * c[i] * r_ + r * r_ * numbers[1][0] - n * numbers[1][0]));
-                                y[1] = (y[0] - temp) / (-2 * numbers[1][1] * s * s);
-                                y[0] = (y[0] + temp) / (-2 * numbers[1][1] * s * s);
-
-                                x[0] = (c[i] - y[0] * numbers[1][1]) / numbers[1][0];
-                                x[1] = (c[i] - y[1] * numbers[1][1]) / numbers[1][0];
+                                while (c_temp < 0)
+                                    c_temp += s;
+                                if (c_temp == numbers[2][2])
+                                    c.Add(c_temp);
+                                else if (c_temp - s == numbers[2][2])
+                                    c.Add(c_temp - s);
                             }
+                        }
+                    }
 
-                            for (int j = 0; j < numberOfResults; j++)
+                    numbers.RemoveAt(0);
+                    for (int i = 0; i < c.Count; i++)
+                    {
+                        if (numbers[1][0] == 0)
+                        {
+                            numberOfResults = 1;
+                            y[0] = Convert.ToDouble(c[i]) / numbers[1][1];
+                            x[0] = Convert.ToDouble(numbers[1][1] * n - r * c[i] * s - numbers[1][1] * r * r_) / (c[i] * s * s + numbers[1][1] * s * r_);
+                        }
+                        else
+                        {
+                            numberOfResults = 2;
+                            y[0] = -(s * s * c[i] - s * r_ * numbers[1][1] + s * r * numbers[1][0]);
+                            temp = Math.Sqrt(Math.Pow(s * s * c[i] - s * r_ * numbers[1][1] + s * r * numbers[1][0], 2) + 4 * (s * s * numbers[1][1]) * (s * c[i] * r_ + r * r_ * numbers[1][0] - n * numbers[1][0]));
+                            y[1] = (y[0] - temp) / (-2 * numbers[1][1] * s * s);
+                            y[0] = (y[0] + temp) / (-2 * numbers[1][1] * s * s);
+
+                            x[0] = (c[i] - y[0] * numbers[1][1]) / numbers[1][0];
+                            x[1] = (c[i] - y[1] * numbers[1][1]) / numbers[1][0];
+                        }
+
+                        for (int j = 0; j < numberOfResults; j++)
+                        {
+                            if (x[j] >= 0 && y[j] >= 0 && Math.Abs(x[j] - Math.Round(x[j])) < eps && Math.Abs(y[j] - Math.Round(y[j])) < eps)
                             {
-                                if (x[j] >= 0 && y[j] >= 0 && Math.Abs(x[j] - Math.Round(x[j])) < eps && Math.Abs(y[j] - Math.Round(y[j])) < eps)
+                                possibleValue = Convert.ToInt32(Math.Floor(x[j]) * s + r);
+                                if (dividers.IndexOf(possibleValue) == -1 && possibleValue != n && possibleValue != 1)
                                 {
-                                    possibleValue = Convert.ToInt32(Math.Floor(x[j]) * s + r);
-                                    if (dividers.IndexOf(possibleValue) == -1 && possibleValue != n)
+                                    if (generatingPrimeNumbers.CheckPrimeNumber(possibleValue))
                                     {
-                                        if (generatingPrimeNumbers.CheckPrimeNumber(possibleValue))
-                                            dividers.Add(possibleValue);
-                                        else
-                                            FindDividers(possibleValue);
+                                        dividers.Add(possibleValue);
 
                                         possibleValue = 1;
                                         for (int k = 0; k < dividers.Count; k++)
@@ -1149,18 +1154,18 @@ namespace _5_crypto_2_final_ver
                                         if (possibleValue == n)
                                             return;
                                     }
-                                    else
-                                        continue;
                                 }
+                                else
+                                    continue;
                             }
                         }
-                        c.Clear();
                     }
-                    while (numbers[1][0] != 0);
+                    c.Clear();
                 }
+                while (numbers[1][0] != 0);
+
                 numbers.Clear();
             }
-
             
         }
     }
