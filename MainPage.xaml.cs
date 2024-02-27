@@ -960,14 +960,18 @@ namespace _5_crypto_2_final_ver
     public class LenstraMethod_Class
     {
         private GeneratingPrimeNumbersClass generatingPrimeNumbers;
-        public List<int> dividers;
+        public List<int>[] dividers;
+        //public List<int> dividers;
         public int num;
 
         public LenstraMethod_Class()
         {
             generatingPrimeNumbers = new GeneratingPrimeNumbersClass();
             generatingPrimeNumbers.k = 10;
-            dividers = new List<int>();
+
+            dividers = new List<int>[2];
+            dividers[0] = new List<int>();
+            dividers[1] = new List<int>();
         }
 
         public void CheckIfPrimeNumber(string input)
@@ -1012,14 +1016,28 @@ namespace _5_crypto_2_final_ver
 
             if (n % 2 == 0)
             {
-                if (dividers.IndexOf(2) == -1)
-                    dividers.Add(2);
+                c_temp = dividers[0].IndexOf(2);
+                if (c_temp == -1)
+                {
+                    dividers[0].Add(2);
+                    dividers[1].Add(1);
+                }
+                else
+                    dividers[1][c_temp] += 1;
+
                 if (n != 2)
                 {
                     n /= 2;
                     if (generatingPrimeNumbers.CheckPrimeNumber(n))
                     {
-                        if (dividers.IndexOf(n) == -1) { dividers.Add(n); }
+                        c_temp = dividers[0].IndexOf(n);
+                        if (c_temp == -1)
+                        {
+                            dividers[0].Add(n);
+                            dividers[1].Add(1);
+                        }
+                        else
+                            dividers[1][c_temp] += 1;
                     }
                     else
                         FindDividers(n);
@@ -1028,6 +1046,7 @@ namespace _5_crypto_2_final_ver
             }
 
             S = Convert.ToInt32(Math.Floor(Math.Pow(n, 1.0 / 3.0)) + 1);
+            //S = Convert.ToInt32(Math.Floor(Math.Pow(n, 1.0 / 2.0)) + 1);
 
             for (int i = n - 1; i >= S; i--)
             {
@@ -1037,7 +1056,15 @@ namespace _5_crypto_2_final_ver
                     break;
                 }
             }
-            
+            //for (int i = S; i < n - 1; i++)
+            //{
+            //    if (generatingPrimeNumbers.CheckPrimeNumber(i))
+            //    {
+            //        s = i;
+            //        break;
+            //    }
+            //}
+
             for (int r = s - 1; r >= 1; r--)
             {
                 iterations = 0;
@@ -1142,21 +1169,23 @@ namespace _5_crypto_2_final_ver
                             if (x[j] >= 0 && y[j] >= 0 && Math.Abs(x[j] - Math.Round(x[j])) < eps && Math.Abs(y[j] - Math.Round(y[j])) < eps)
                             {
                                 possibleValue = Convert.ToInt32(Math.Floor(x[j]) * s + r);
-                                if (dividers.IndexOf(possibleValue) == -1 && possibleValue != n && possibleValue != 1)
+                                if (possibleValue != 1 && generatingPrimeNumbers.CheckPrimeNumber(possibleValue))
                                 {
-                                    if (generatingPrimeNumbers.CheckPrimeNumber(possibleValue))
+                                    c_temp = dividers[0].IndexOf(possibleValue);
+                                    if (c_temp == -1)
                                     {
-                                        dividers.Add(possibleValue);
-
-                                        possibleValue = 1;
-                                        for (int k = 0; k < dividers.Count; k++)
-                                            possibleValue *= dividers[k];
-                                        if (possibleValue == n)
-                                            return;
+                                        dividers[0].Add(possibleValue);
+                                        dividers[1].Add(1);
                                     }
+                                    else
+                                        dividers[1][c_temp] += 1;
+
+                                    possibleValue = 1;
+                                    for (int k = 0; k < dividers[0].Count; k++)
+                                        possibleValue *= Convert.ToInt32(Math.Pow(dividers[0][k], dividers[1][k]));
+                                    if (possibleValue == n)
+                                        return;
                                 }
-                                else
-                                    continue;
                             }
                         }
                     }

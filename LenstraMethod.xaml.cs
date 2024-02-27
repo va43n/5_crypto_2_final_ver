@@ -74,14 +74,12 @@ namespace _5_crypto_2_final_ver
                 //numbers = "Количество проверенных чисел, включая результирующее, равно " + pn.Iterations + ". Все числа, подвергшиеся проверке: " + Environment.NewLine;
 
                 ResultTextBox.Text = "Делители числа " + input + ": ";
-                for (int i = 0; i < lm.dividers.Count; i++)
+                for (int i = 0; i < lm.dividers[0].Count; i++)
                 {
-                    ResultTextBox.Text += lm.dividers[i] + " ";
+                    ResultTextBox.Text += lm.dividers[0][i] + "(" + lm.dividers[1][i] + ") ";
                 }
                 //TimeTextBox.Text = numbers;
                 //await FileIO.WriteTextAsync(output_file, output + numbers);
-
-                lm.dividers.Clear();
             }
             catch (Exception exc)
             {
