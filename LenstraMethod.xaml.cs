@@ -47,8 +47,7 @@ namespace _5_crypto_2_final_ver
         {
             LenstraMethod_Class lm = new LenstraMethod_Class();
             //Функция, вызывающаяся при нажатии на кнопку "Получить результат"
-            string input, output;
-            int result;
+            string input, output, timeAndIterations;
             double time;
 
             //Получение доступа к нужной папке
@@ -61,25 +60,30 @@ namespace _5_crypto_2_final_ver
             {
                 //Получение параметров из первого файла и выполнение основной функции класса
                 input = await FileIO.ReadTextAsync(probs_file);
+                
                 //замер времени
-                //stopwatch.Restart();
                 lm.CheckIfPrimeNumber(input);
-                //stopwatch.Stop();
-                //time = stopwatch.ElapsedMilliseconds;
 
-                //result = pn.PrimeNumber;
+                stopwatch.Restart();
+                lm.FindDividers(lm.num);
+                stopwatch.Stop();
+                time = stopwatch.ElapsedMilliseconds;
 
                 //запись результата в файл и на экран
-                //output = "Полученное простое число: " + result + ". Результат был получен за время - " + Convert.ToDouble(time) / 1000 + " c." + Environment.NewLine;
-                //numbers = "Количество проверенных чисел, включая результирующее, равно " + pn.Iterations + ". Все числа, подвергшиеся проверке: " + Environment.NewLine;
-
-                ResultTextBox.Text = "Делители числа " + input + ": ";
+                output = "Делители числа " + input + ":";
                 for (int i = 0; i < lm.dividers[0].Count; i++)
                 {
-                    ResultTextBox.Text += lm.dividers[0][i] + "(" + lm.dividers[1][i] + ") ";
+                    output += " " + lm.dividers[0][i] + "(" + lm.dividers[1][i] + ")";
                 }
-                //TimeTextBox.Text = numbers;
-                //await FileIO.WriteTextAsync(output_file, output + numbers);
+                output += ".";
+                ResultTextBox.Text = output;
+
+                timeAndIterations = "Среднее количество итераций основного цикла: " + lm.allIterations + ";\nФакторизация выполнена за " + Convert.ToDouble(time) / 1000 + " c.";
+                TimeTextBox.Text = timeAndIterations;
+
+                output = output + Environment.NewLine + timeAndIterations;
+
+                await FileIO.WriteTextAsync(output_file, output);
             }
             catch (Exception exc)
             {
