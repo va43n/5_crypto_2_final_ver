@@ -78,7 +78,7 @@ namespace _5_crypto_2_final_ver
                 output += ".";
                 ResultTextBox.Text = output;
 
-                timeAndIterations = "Среднее количество итераций основного цикла: " + lm.allIterations + ";\nФакторизация выполнена за " + Convert.ToDouble(time) / 1000 + " c.";
+                timeAndIterations = "Общее количество итераций основного цикла: " + lm.allIterations + ";\nФакторизация выполнена за " + Convert.ToDouble(time) / 1000 + " c.";
                 TimeTextBox.Text = timeAndIterations;
 
                 output = output + Environment.NewLine + timeAndIterations;

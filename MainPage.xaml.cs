@@ -905,6 +905,9 @@ namespace _5_crypto_2_final_ver
 
         public bool CheckPrimeNumber(int number)
         {
+            if (number == 2 || number == 1)
+                return true;
+
             //тест Рабина-Миллера
             Random rand = new Random();
 
@@ -1013,42 +1016,11 @@ namespace _5_crypto_2_final_ver
             int numberOfResults, c_temp, possibleValue;
             double[] x = new double[2], y = new double[2];
             double temp;
+            bool isFindSomething;
             double eps = Math.Pow(10, -10);
 
-            if (n % 2 == 0)
-            {
-                c_temp = dividers[0].IndexOf(2);
-                if (c_temp == -1)
-                {
-                    dividers[0].Add(2);
-                    dividers[1].Add(1);
-                }
-                else
-                    dividers[1][c_temp] += 1;
-
-                n /= 2;
-                if (generatingPrimeNumbers.CheckPrimeNumber(n) || n == 2)
-                {
-                    c_temp = dividers[0].IndexOf(n);
-                    if (c_temp == -1)
-                    {
-                        dividers[0].Add(n);
-                        dividers[1].Add(1);
-                    }
-                    else
-                        dividers[1][c_temp] += 1;
-                }
-                else
-                {
-                    allIterations++;
-                    FindDividers(n);
-                }
-                return;
-            }
 
             S = Convert.ToInt32(Math.Floor(Math.Pow(n, 1.0 / 3.0)) + 1);
-            //S = Convert.ToInt32(Math.Floor(Math.Pow(n, 1.0 / 2.0)) + 1);
-            //S = n / 2 - 1;
 
             for (int i = n - 1; i >= S; i--)
             {
@@ -1058,17 +1030,10 @@ namespace _5_crypto_2_final_ver
                     break;
                 }
             }
-            //for (int i = S; i < n - 1; i++)
-            //{
-            //    if (generatingPrimeNumbers.CheckPrimeNumber(i))
-            //    {
-            //        s = i;
-            //        break;
-            //    }
-            //}
 
             for (int r = s - 1; r >= 1; r--)
             {
+                isFindSomething = false;
                 iterations = 0;
 
                 r_star = Functions.EuclideanAlgorithm(r, 1, s);
@@ -1086,11 +1051,6 @@ namespace _5_crypto_2_final_ver
                 if (numbers[1][0] == 0)
                     numbers[1][0] = s;
                 numbers[1][1] = 1;
-                //numbers[1][2] = Functions.EuclideanAlgorithm(s, (n - r * r_) * r_star, s * s);
-                //if (numbers[1][2] >= s)
-                //    numbers[1][2] %= s;
-                //while (numbers[1][2] < 0)
-                //    numbers[1][2] += s;
 
                 numbers[1][2] = ((n - r * r_) / s * r_star) % s;
 
@@ -1099,12 +1059,7 @@ namespace _5_crypto_2_final_ver
                     iterations++;
                     numbers.Add(new int[3]);
 
-                    if (numbers[0][0] - numbers[0][0] / numbers[1][0] * numbers[1][0] == 0 && iterations % 2 != 0)
-                    {
-                        q = numbers[0][0] / numbers[1][0] - 1;
-                    }
-                    else
-                        q = numbers[0][0] / numbers[1][0];
+                    q = numbers[0][0] / numbers[1][0];
 
                     numbers[2][0] = numbers[0][0] - q * numbers[1][0];
                     numbers[2][1] = numbers[0][1] - q * numbers[1][1];
@@ -1151,9 +1106,6 @@ namespace _5_crypto_2_final_ver
                         }
                     }
 
-                    if (c.Count == 2 && c[0] == c[1])
-                        c.RemoveAt(0);
-
                     numbers.RemoveAt(0);
 
                     for (int i = 0; i < c.Count; i++)
@@ -1162,14 +1114,13 @@ namespace _5_crypto_2_final_ver
                         {
                             numberOfResults = 1;
                             y[0] = Convert.ToDouble(c[i]) / numbers[1][1];
-                            //x[0] = Convert.ToDouble(numbers[1][1] * n - r * c[i] * s - numbers[1][1] * r * r_) / (c[i] * s * s + numbers[1][1] * s * r_);
                             x[0] = Convert.ToDouble(n - r * y[0] * s - r * r_) / (s * s * y[0] + s * r_);
                         }
                         else
                         {
                             numberOfResults = 2;
 
-                          y[0] = -(s * s * c[i] - s * r_ * numbers[1][1] + s * r * numbers[1][0]);
+                            y[0] = -(s * s * c[i] - s * r_ * numbers[1][1] + s * r * numbers[1][0]);
                             temp = Math.Sqrt(Math.Pow(s * s * c[i] - s * r_ * numbers[1][1] + s * r * numbers[1][0], 2) + 4 * (s * s * numbers[1][1]) * (s * c[i] * r_ + r * r_ * numbers[1][0] - n * numbers[1][0]));
                             y[1] = (y[0] - temp) / (-2 * numbers[1][1] * s * s);
                             y[0] = (y[0] + temp) / (-2 * numbers[1][1] * s * s);
@@ -1188,13 +1139,17 @@ namespace _5_crypto_2_final_ver
                                     c_temp = dividers[0].IndexOf(possibleValue);
                                     if (c_temp == -1)
                                     {
+                                        isFindSomething = true;
                                         dividers[0].Add(possibleValue);
                                         dividers[1].Add(1);
                                     }
                                     else
                                     {
                                         if (n % Convert.ToInt32(Math.Pow(dividers[0][c_temp], dividers[1][c_temp] + 1)) == 0)
+                                        {
+                                            isFindSomething = true;
                                             dividers[1][c_temp] += 1;
+                                        }
                                     }
 
                                     possibleValue = 1;
@@ -1203,7 +1158,6 @@ namespace _5_crypto_2_final_ver
                                     if (possibleValue == n)
                                     {
                                         allIterations += iterations;
-                                        allIterations /= s - 2;
                                         return;
                                     }
                                 }
@@ -1216,7 +1170,8 @@ namespace _5_crypto_2_final_ver
 
                 numbers.Clear();
 
-                allIterations += iterations;
+                if (isFindSomething)
+                    allIterations += iterations;
             }
         }
     }
