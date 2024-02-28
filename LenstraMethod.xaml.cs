@@ -84,6 +84,12 @@ namespace _5_crypto_2_final_ver
                 output = output + Environment.NewLine + timeAndIterations;
 
                 await FileIO.WriteTextAsync(output_file, output);
+
+                //ResultTextBox.Text += "\nr:";
+                //for (int i = 0; i < lm.all_r.Count; i++)
+                //{
+                //    ResultTextBox.Text += " " + lm.all_r[i];
+                //}
             }
             catch (Exception exc)
             {

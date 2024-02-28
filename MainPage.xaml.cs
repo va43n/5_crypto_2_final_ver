@@ -964,9 +964,9 @@ namespace _5_crypto_2_final_ver
     {
         private GeneratingPrimeNumbersClass generatingPrimeNumbers;
         public List<int>[] dividers;
-        //public List<int> dividers;
         public int num;
         public int allIterations;
+        //public List<int> all_r;
 
         public LenstraMethod_Class()
         {
@@ -978,11 +978,16 @@ namespace _5_crypto_2_final_ver
             dividers[1] = new List<int>();
 
             allIterations = 0;
+
+            //all_r = new List<int>();
         }
 
         public void CheckIfPrimeNumber(string input)
         {
             int number;
+
+            if (input.Length == 0)
+                throw new Exception("Вы не ввели значение n");
 
             try
             {
@@ -1022,7 +1027,7 @@ namespace _5_crypto_2_final_ver
 
             S = Convert.ToInt32(Math.Floor(Math.Pow(n, 1.0 / 3.0)) + 1);
 
-            for (int i = n - 1; i >= S; i--)
+            for (int i = n / 2 + 1; i < n; i++)
             {
                 if (generatingPrimeNumbers.CheckPrimeNumber(i))
                 {
@@ -1134,12 +1139,13 @@ namespace _5_crypto_2_final_ver
                             if (x[j] >= 0 && y[j] >= 0 && Math.Abs(x[j] - Math.Round(x[j])) < eps && Math.Abs(y[j] - Math.Round(y[j])) < eps)
                             {
                                 possibleValue = Convert.ToInt32(Math.Floor(x[j]) * s + r);
-                                if (possibleValue != 1 && generatingPrimeNumbers.CheckPrimeNumber(possibleValue))
+                                if (possibleValue != 1 && generatingPrimeNumbers.CheckPrimeNumber(possibleValue) && possibleValue < n)
                                 {
                                     c_temp = dividers[0].IndexOf(possibleValue);
                                     if (c_temp == -1)
                                     {
                                         isFindSomething = true;
+                                        //all_r.Add(r);
                                         dividers[0].Add(possibleValue);
                                         dividers[1].Add(1);
                                     }
@@ -1148,6 +1154,7 @@ namespace _5_crypto_2_final_ver
                                         if (n % Convert.ToInt32(Math.Pow(dividers[0][c_temp], dividers[1][c_temp] + 1)) == 0)
                                         {
                                             isFindSomething = true;
+                                            //all_r.Add(r);
                                             dividers[1][c_temp] += 1;
                                         }
                                     }
