@@ -200,6 +200,36 @@
                     </Viewbox>
                 </Button>
             </Border>
+
+            <Border
+            Background="#FF87BFC5"
+            Margin="4">
+                            <Button
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Background="#FF87BFC5"
+                Name="Gamma"
+                Click="GoToGamma">
+                    <Viewbox>
+                        <TextBlock Text="Од. гаммирование"/>
+                    </Viewbox>
+                </Button>
+            </Border>
+
+            <Border
+            Background="#FF87BFC5"
+            Margin="4">
+                            <Button
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Background="#FF87BFC5"
+                Name="Scrambler"
+                Click="GoToScrambler">
+                    <Viewbox>
+                        <TextBlock Text="Скремблер"/>
+                    </Viewbox>
+                </Button>
+            </Border>
         </StackPanel>
         
         <Frame 

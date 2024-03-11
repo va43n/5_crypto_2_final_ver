@@ -122,6 +122,9 @@
     <Compile Include="FileInput.xaml.cs">
       <DependentUpon>FileInput.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Gamma.xaml.cs">
+      <DependentUpon>Gamma.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Generating.xaml.cs">
       <DependentUpon>Generating.xaml</DependentUpon>
     </Compile>
@@ -147,6 +150,9 @@
       <DependentUpon>NewCode.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scrambler.xaml.cs">
+      <DependentUpon>Scrambler.xaml</DependentUpon>
+    </Compile>
     <Compile Include="VigenereCipher.xaml.cs">
       <DependentUpon>VigenereCipher.xaml</DependentUpon>
     </Compile>
@@ -172,6 +178,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="FileInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Gamma.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -204,6 +214,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="NewCode.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Scrambler.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
