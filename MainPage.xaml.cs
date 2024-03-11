@@ -1263,7 +1263,7 @@ namespace _5_crypto_2_final_ver
 						throw new Exception("В шестнадцатеричном ключе присутствует символ " + inputKey[i] + ", который отсутствует в шестнадцатеричной системе счисления.");
 
 					symbol = Functions.ConvertTo2(pos);
-					while (symbol.Length < 8)
+					while (symbol.Length < 4)
 						symbol = "0" + symbol;
 
 					keyIn2 += symbol;
@@ -1337,8 +1337,6 @@ namespace _5_crypto_2_final_ver
 
 	public class ScramblerClass
 	{
-		private static string alphabet = "0123456789ABCDEF";
-
 		private string memoryCells;
 		private string symbolMessage;
 
@@ -1406,44 +1404,39 @@ namespace _5_crypto_2_final_ver
 
 				for (int i = 0; i < memoryCells.Length; i++)
 				{
-					if (alphabet.IndexOf(memoryCells[i], 0, 2) == -1)
+					if (GammaClass.alphabet.IndexOf(memoryCells[i], 0, 2) == -1)
 						throw new Exception("Недопустимое начальное значение скремблера: " + memoryCells[i] + ", начальные значения скремблера в двоичном представлении должны принимать значения 0 либо 1.");
 				}
 			}
 			else if (keyMode == KeyMode.Key16)
 			{
-				if (memoryCells.Length * 4 != scramblerCoefficients.Length)
-					throw new Exception("Количество коэффициентов скремблера должно быть в 4 раза больше размерности начального значения скремблера в шестнадцатеричном представлении.");
-
-				temp = "";
 				for (int i = 0; i < memoryCells.Length; i++)
 				{
-					number = alphabet.IndexOf(memoryCells[i]);
+					number = GammaClass.alphabet.IndexOf(memoryCells[i], 0, 16);
 					if (number == -1)
-						throw new Exception("Недопустимое начальное значение скремблера: " + memoryCells[i] + ", начальные значения скремблера в двоичном представлении должны принимать значения от 0 до F.");
-
-					symbol = Functions.ConvertTo2(number);
-					while (symbol.Length < 4)
-						symbol = "0" + symbol;
-					temp += symbol;
+						throw new Exception("Недопустимое начальное значение скремблера: " + memoryCells[i] + ", начальные значения скремблера в шестнадцатеричном представлении должны принимать значения от 0 до F.");
 				}
-				memoryCells = temp;
+
+				number = Functions.ConvertTo10(memoryCells, 16, GammaClass.alphabet.Substring(0, 16));
+				if (number >= Math.Pow(2, scramblerCoefficients.Length))
+					throw new Exception("Начальное значение скремблера, введенное в шестнадцатеричном представлении, должно быть меньше числа 2^<количество коэффициентов скремблера>.");
+
+				memoryCells = Functions.ConvertTo2(number);
+				while (memoryCells.Length < scramblerCoefficients.Length)
+					memoryCells = "0" + memoryCells;
 			}
 			else if (keyMode == KeyMode.KeySymbol)
 			{
-				try
+				for (int i = 0; i < memoryCells.Length; i++)
 				{
-					number = Convert.ToInt32(memoryCells);
-					if (number <= 0)
-						throw new Exception();
-				}
-				catch
-				{
-					throw new Exception("Недопустимое начальное значение скремблера: " + memoryCells + ", начальное значение скремблера, введенное в десятичном представлении, должно быть целым положительным числом");
+					number = GammaClass.alphabet.IndexOf(memoryCells[i]);
+					if (number == -1)
+						throw new Exception("Недопустимое начальное значение скремблера: " + memoryCells[i] + ", начальные значения скремблера в символьном представлении должны принимать значения от 0 до F.");
 				}
 
+				number = Functions.ConvertTo10(memoryCells, 256, GammaClass.alphabet);
 				if (number >= Math.Pow(2, scramblerCoefficients.Length))
-					throw new Exception("Начальное значение скремблера, введенное в десятичном представлении, должно быть меньше числа 2^<количество коэффициентов скремблера>.");
+					throw new Exception("Начальное значение скремблера, введенное в символьном представлении, должно быть меньше числа 2^<количество коэффициентов скремблера>.");
 
 				memoryCells = Functions.ConvertTo2(number);
 				while (memoryCells.Length < scramblerCoefficients.Length)
@@ -1502,23 +1495,34 @@ namespace _5_crypto_2_final_ver
 
 		public string GetProperties()
 		{
-			string result, cycle;
+			string result = "", period;
 			double s;
 
-			cycle = GenerateSequence(Convert.ToInt32(Math.Pow(2, scramblerCoefficients.Length)) + scramblerCoefficients.Length + 2);
-			cycle = FindCycle(cycle);
+			period = GenerateSequence(Convert.ToInt32(Math.Pow(2, scramblerCoefficients.Length)) + scramblerCoefficients.Length + 2);
+			period = FindPeriod(period);
+			result += string.Format("Период последовательности скремблера: размер периода - {0}, период - {1}\n", period.Length, period);
 
-			result = string.Format("{0}\nЦикличность: размер цикла - {1}, цикл: {2}.\n{3}\n", FindBalance(cycle), cycle.Length, cycle, FindCorrelation(cycle));
-			s = CheckUniform(cycle);
-            result += string.Format("Критерий x^2: {0} < {1}, ", s, 3.84);
-			result += s < 3.84 ? "последовательность равномерная." : "Последовательность неравномерная.";
+			result += FindBalance(period);
+
+			result += CheckCycle(period);
+
+			result += FindCorrelation(period);
+
+			s = CheckUniform(period);
+			if (s == -1)
+				result += "Критерий x^2: Последовательность неравномерная.";
+			else
+			{
+				result += string.Format("Критерий x^2: {0} < {1}, ", s, 3.84);
+				result += s < 3.84 ? "последовательность равномерная." : "Последовательность неравномерная.";
+			}
 
 			return result;
 		}
 
-		private string FindCycle(string sequence)
+		private string FindPeriod(string sequence)
 		{
-			string cycle = sequence;
+			string period = sequence;
 			bool equal;
 			List<string> parts = new List<string>();
 
@@ -1543,36 +1547,75 @@ namespace _5_crypto_2_final_ver
 					continue;
 				}
 
-				cycle = FindCycle(parts[0]);
+				period = FindPeriod(parts[0]);
 				break;
 			}
 
-			return cycle;
+			return period;
 		}
 
-		private string FindBalance(string cycle)
+		private string FindBalance(string period)
 		{
 			double[] count = new double[2];
 
-			for (int i = 0; i < cycle.Length; i++)
-				count[cycle[i] - '0']++;
+			for (int i = 0; i < period.Length; i++)
+				count[period[i] - '0']++;
 
-			count[0] = count[0] / cycle.Length * 100;
-			count[1] = count[1] / cycle.Length * 100;
+			count[0] = count[0] / period.Length * 100;
 
-			return string.Format("- Сбалансированность: количество 0 - {0}%, количество 1 - {1}%.", count[0], count[1]);
+			return string.Format("- Сбалансированность: количество 0 - {0}%, количество 1 - {1}%.\n", count[0], 100 - count[0]);
 		}
 
-		private string FindCorrelation(string cycle)
+		private string CheckCycle(string period)
+		{
+			string result = "";
+			List<int> stripes = new List<int>();
+			char currentSymbol;
+			int counter;
+			double summary = 0;
+
+			currentSymbol = period[0];
+			counter = 1;
+
+			for (int i = 1; i < period.Length; i++)
+			{
+				if (currentSymbol != period[i])
+				{
+					while (stripes.Count < counter)
+						stripes.Add(0);
+					stripes[counter - 1]++;
+
+					summary++;
+
+					counter = 1;
+					currentSymbol = period[i];
+				}
+				else
+					counter++;
+			}
+
+			result = string.Format("- Цикличность: Всего полос - {0}.\n", summary);
+			for (int i = 0; i < stripes.Count; i++)
+			{
+				result += string.Format("\tПолос размера {0}: {1} ({2}%);\n", i + 1, stripes[i], stripes[i] / summary * 100);
+			}
+
+			return result;
+		}
+
+		private string FindCorrelation(string period)
 		{
 			string firstHalf, secondHalf;
 			double equals = 0;
 
-			if (cycle.Length % 2 == 1)
-				cycle = cycle.Substring(1);
+			if (period.Length == 1)
+				return "- Корреляция: количество совпадений - 100%, количество несовпадений - 0%.\n";
 
-			firstHalf = cycle.Substring(0, cycle.Length / 2);
-			secondHalf = cycle.Substring(cycle.Length / 2);
+			if (period.Length % 2 == 1)
+				period = period.Substring(1);
+
+			firstHalf = period.Substring(0, period.Length / 2);
+			secondHalf = period.Substring(period.Length / 2);
 
 			for (int i = 0; i < firstHalf.Length; i++)
 				if (firstHalf[i] == secondHalf[i])
@@ -1580,21 +1623,24 @@ namespace _5_crypto_2_final_ver
 
 			equals = equals / firstHalf.Length * 100;
 
-			return string.Format("- Корреляция: количество совпадений - {0}%, количество несовпадений - {1}%.", equals, 100 - equals);
+			return string.Format("- Корреляция: количество совпадений - {0}%, количество несовпадений - {1}%.\n", equals, 100 - equals);
 		}
 
-		private double CheckUniform(string cycle)
+		private double CheckUniform(string period)
 		{
 			double pi = 1.0 / 2.0;
 			double[] k = new double[2];
 
-			for (int i = 0; i < cycle.Length; i++)
-                k[cycle[i] - '0']++;
+			if (period.Length == 1)
+				return -1;
 
-			k[0] = Math.Pow(k[0] / cycle.Length - pi, 2) / pi;
-            k[1] = Math.Pow(k[1] / cycle.Length - pi, 2) / pi;
+			for (int i = 0; i < period.Length; i++)
+				k[period[i] - '0']++;
 
-            return cycle.Length * (k[0] + k[1]);
+			k[0] = Math.Pow(k[0] / period.Length - pi, 2) / pi;
+			k[1] = Math.Pow(k[1] / period.Length - pi, 2) / pi;
+
+			return period.Length * (k[0] + k[1]);
 		}
 
 	}

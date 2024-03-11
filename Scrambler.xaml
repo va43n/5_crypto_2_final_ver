@@ -173,7 +173,7 @@
 					</ComboBoxItem>
 
 					<ComboBoxItem>
-						<TextBlock FontSize="30" FontFamily="Consolas">Десятичный вид</TextBlock>
+                        <TextBlock FontSize="30" FontFamily="Consolas">Символьный вид</TextBlock>
 					</ComboBoxItem>
 				</ComboBox>
 			</Border>
