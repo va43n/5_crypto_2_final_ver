@@ -886,7 +886,7 @@ namespace _5_crypto_2_final_ver
 					numbers[i] = Convert.ToInt32(characteristics[i]);
 					if (numbers[i] <= 0) { throw new Exception("Оба параметра должны быть натуральными числами."); }
 				}
-				catch (FormatException e) { throw new Exception("Значение " + characteristics[i] + " не является числовым."); }
+				catch (FormatException) { throw new Exception("Значение " + characteristics[i] + " не является числовым."); }
 			}
 
 			//задание основных параметров
@@ -1301,7 +1301,7 @@ namespace _5_crypto_2_final_ver
 				resultIn2 += (Math.Abs((messageIn2[i] - '0') + (keyIn2[i] - '0')) % 2).ToString();
 
 			for (int i = 0; i < resultIn2.Length / 8; i++)
-				result += alphabet[Functions.ConvertTo10(resultIn2.Substring(i * 8, 8), 2, "01")];
+				result += alphabet[Convert.ToInt32(Functions.ConvertTo10(resultIn2.Substring(i * 8, 8), 2, "01"))];
 
 			return result;
 		}
@@ -1394,7 +1394,6 @@ namespace _5_crypto_2_final_ver
 
 		private void CheckMemoryCells()
 		{
-			string temp, symbol;
 			int number;
 
 			if (keyMode == KeyMode.Key2)
@@ -1417,7 +1416,7 @@ namespace _5_crypto_2_final_ver
 						throw new Exception("Недопустимое начальное значение скремблера: " + memoryCells[i] + ", начальные значения скремблера в шестнадцатеричном представлении должны принимать значения от 0 до F.");
 				}
 
-				number = Functions.ConvertTo10(memoryCells, 16, GammaClass.alphabet.Substring(0, 16));
+				number = Convert.ToInt32(Functions.ConvertTo10(memoryCells, 16, GammaClass.alphabet.Substring(0, 16)));
 				if (number >= Math.Pow(2, scramblerCoefficients.Length))
 					throw new Exception("Начальное значение скремблера, введенное в шестнадцатеричном представлении, должно быть меньше числа 2^<количество коэффициентов скремблера>.");
 
@@ -1434,7 +1433,7 @@ namespace _5_crypto_2_final_ver
 						throw new Exception("Недопустимое начальное значение скремблера: " + memoryCells[i] + ", начальные значения скремблера в символьном представлении должны принимать значения от 0 до F.");
 				}
 
-				number = Functions.ConvertTo10(memoryCells, 256, GammaClass.alphabet);
+				number = Convert.ToInt32(Functions.ConvertTo10(memoryCells, 256, GammaClass.alphabet));
 				if (number >= Math.Pow(2, scramblerCoefficients.Length))
 					throw new Exception("Начальное значение скремблера, введенное в символьном представлении, должно быть меньше числа 2^<количество коэффициентов скремблера>.");
 
@@ -1498,7 +1497,7 @@ namespace _5_crypto_2_final_ver
 			string result = "", period;
 			double s;
 
-			period = GenerateSequence(Convert.ToInt32(Math.Pow(2, scramblerCoefficients.Length)) + scramblerCoefficients.Length + 2);
+			period = GenerateSequence(Convert.ToInt32(Math.Pow(2, scramblerCoefficients.Length)) * 2 + 2);
 			period = FindPeriod(period);
 			result += string.Format("Период последовательности скремблера: размер периода - {0}, период - {1}\n", period.Length, period);
 
@@ -1526,7 +1525,10 @@ namespace _5_crypto_2_final_ver
 			bool equal;
 			List<string> parts = new List<string>();
 
-			for (int i = sequence.Length / 2; i >= 1; i--)
+			if (sequence.Length % 2 == 1)
+				sequence = sequence.Substring(0, sequence.Length - 1);
+
+			for (int i = 1; i <= sequence.Length / 2; i++)
 			{
 				equal = true;
 
@@ -1547,7 +1549,7 @@ namespace _5_crypto_2_final_ver
 					continue;
 				}
 
-				period = FindPeriod(parts[0]);
+				period = parts[0];
 				break;
 			}
 
@@ -1660,12 +1662,12 @@ namespace _5_crypto_2_final_ver
 			return ConvertTo2(number / 2) + (number % 2);
 		}
 
-		public static int ConvertTo10(string value, int pi, string alphabet)
+		public static double ConvertTo10(string value, int pi, string alphabet)
 		{
-			int result = 0;
+            double result = 0;
 
 			for (int i = 0; i < value.Length; i++)
-				result += alphabet.IndexOf(value[i]) * Convert.ToInt32(Math.Pow(pi, value.Length - i - 1));
+				result += alphabet.IndexOf(value[i]) * Math.Pow(pi, value.Length - i - 1);
 
 			return result;
 		}
