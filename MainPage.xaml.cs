@@ -1446,7 +1446,6 @@ namespace _5_crypto_2_final_ver
 		private void CheckMessage(string message)
 		{
 			int pos;
-			string symbolIn2;
 
 			if (message.Length == 0)
 				throw new Exception("Вы не ввели сообщение для шифрования/дешифрования");
@@ -1456,10 +1455,6 @@ namespace _5_crypto_2_final_ver
 				pos = GammaClass.alphabet.IndexOf(message[i]);
 				if (pos == -1)
 					throw new Exception("Во входном сообщении присутствует символ " + message[i] + ", который отсутствует в алфавите.");
-
-				symbolIn2 = Functions.ConvertTo2(pos);
-				while (symbolIn2.Length < 8)
-					symbolIn2 = "0" + symbolIn2;
 			}
 
 			symbolMessage = message;
