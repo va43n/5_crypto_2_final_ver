@@ -1463,19 +1463,19 @@ namespace _5_crypto_2_final_ver
 		public string GenerateSequence(int messageLength)
 		{
 			string result = "";
-			char newByte;
+			int newByte;
 
 			while (result.Length < messageLength)
 			{
-				newByte = '0';
+				newByte = 0;
 
 				result += memoryCells[0];
 
 				for (int i = 0; i < memoryCells.Length; i++)
-					newByte = Convert.ToChar(Math.Abs((newByte - '0') + (memoryCells[i] - '0') * (scramblerCoefficients[i] - '0')) % 2 + 48);
+					newByte = Math.Abs((newByte - '0') + (memoryCells[i] - '0') * (scramblerCoefficients[i] - '0')) % 2;
 
 				memoryCells = memoryCells.Substring(1);
-				memoryCells += newByte;
+				memoryCells += newByte.ToString();
 			}
 
 			return result;
