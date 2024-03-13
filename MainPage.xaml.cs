@@ -1565,7 +1565,7 @@ namespace _5_crypto_2_final_ver
 
 		private string CheckCycle(string period)
 		{
-			string result = "";
+			string result;
 			List<int> stripes = new List<int>();
 			char currentSymbol;
 			int counter;
