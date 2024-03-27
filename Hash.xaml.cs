@@ -96,19 +96,28 @@ namespace _5_crypto_2_final_ver
             ChangeTextTextBox.Text = message;
         }
 
-		private void StartCheckButton_Click(object sender, RoutedEventArgs e)
+		private async void StartCheckButton_Click(object sender, RoutedEventArgs e)
 		{
 			string message, result;
 			int position;
 
             //Получение сообщения
             message = ChangeTextTextBox.Text;
-			position = Convert.ToInt32(StartCheckTextBox.Text);
+			try
+			{
+                position = Convert.ToInt32(StartCheckTextBox.Text);
 
-            MD5Class md5 = new MD5Class(message, position);
+                MD5Class md5 = new MD5Class(message, position);
 
-            result = md5.CalculateHash();
-            ResultTextBox.Text = result;
+                result = md5.CalculateHash();
+                CheckResultTextTextBox.Text = result;
+            }
+			catch
+			{
+                //Если что-то пошло не так, на экран выводится сообщение с ошибкой
+                MessageDialog md = new MessageDialog("Введено некорректное значение");
+                await md.ShowAsync().AsTask();
+            }
         }
 
     }
