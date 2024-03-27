@@ -230,6 +230,21 @@
                     </Viewbox>
                 </Button>
             </Border>
+
+            <Border
+            Background="#FF87BFC5"
+            Margin="4">
+                <Button
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Background="#FF87BFC5"
+                Name="Hash"
+                Click="GoToHash">
+                    <Viewbox>
+                        <TextBlock Text="Алгоритм MD5"/>
+                    </Viewbox>
+                </Button>
+            </Border>
         </StackPanel>
         
         <Frame 
