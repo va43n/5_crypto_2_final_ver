@@ -101,6 +101,12 @@ namespace _5_crypto_2_final_ver
 			string message, result;
 			int position;
 
+            //Получение доступа к нужной папке
+            StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
+
+            //Если файла не существует, создать его
+            StorageFile output_file = await storageFolder.CreateFileAsync(output_file_name, CreationCollisionOption.OpenIfExists);
+
             //Получение сообщения
             message = ChangeTextTextBox.Text;
 			try
@@ -111,6 +117,8 @@ namespace _5_crypto_2_final_ver
 
                 result = md5.CalculateHash();
                 CheckResultTextTextBox.Text = result;
+
+                await FileIO.WriteTextAsync(output_file, result);
             }
 			catch
 			{
