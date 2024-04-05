@@ -5,6 +5,11 @@ using System.Collections.Generic;
 using Windows.Web.Syndication;
 using Windows.Media.Ocr;
 using System.Linq;
+using System.Security.Cryptography;
+using Windows.Media.Devices;
+using System.IO;
+using Microsoft.Win32.SafeHandles;
+using Windows.Networking.NetworkOperators;
 
 namespace _5_crypto_2_final_ver
 {
@@ -70,12 +75,17 @@ namespace _5_crypto_2_final_ver
 		{
 			frame.Content = new Scrambler();
 		}
-        
-        private void GoToHash(object sender, RoutedEventArgs e)
-        {
-            frame.Content = new Hash();
-        }
-    }
+		
+		private void GoToHash(object sender, RoutedEventArgs e)
+		{
+			frame.Content = new Hash();
+		}
+
+		private void GoToYarrow160(object sender, RoutedEventArgs e)
+		{
+			frame.Content = new Yarrow160();
+		}
+	}
 
 	class StartParameters
 	{
@@ -1653,10 +1663,10 @@ namespace _5_crypto_2_final_ver
 	public class MD5Class
 	{
 		private static string alphabet = "0123456789ABCDEF";
-        private static int byteLength = 8;
-        private static int wordLength = 32;
+		private static int byteLength = 8;
+		private static int wordLength = 32;
 		private static int oneDigitLength;
-        private static double mod = Math.Pow(2, 32);
+		private static double mod = Math.Pow(2, 32);
 
 		private string inputIn2;
 		private string secondInputIn2;
@@ -1675,15 +1685,15 @@ namespace _5_crypto_2_final_ver
 			for (int i = 0; i < input.Length; i++)
 			{
 				pos = alphabet.IndexOf(input[i]);
-                if (pos == -1)
-                    throw new Exception(string.Format("Во входной последовательности находится символ {0} (позиция {1}), которого нет в алфавите", input[i], i + 1));
+				if (pos == -1)
+					throw new Exception(string.Format("Во входной последовательности находится символ {0} (позиция {1}), которого нет в алфавите", input[i], i + 1));
 
 				oneDigit = Functions.ConvertTo2(pos);
 				while (oneDigit.Length < oneDigitLength)
 					oneDigit = "0" + oneDigit;
 
 				inputIn2 += oneDigit;
-            }
+			}
 
 			if (position != -1)
 			{
@@ -1699,22 +1709,22 @@ namespace _5_crypto_2_final_ver
 
 				input = secondInputIn2;
 				secondInputIn2 = "";
-                for (int i = 0; i < input.Length; i++)
-                {
-                    pos = alphabet.IndexOf(input[i]);
+				for (int i = 0; i < input.Length; i++)
+				{
+					pos = alphabet.IndexOf(input[i]);
 
-                    oneDigit = Functions.ConvertTo2(pos);
-                    while (oneDigit.Length < oneDigitLength)
-                        oneDigit = "0" + oneDigit;
+					oneDigit = Functions.ConvertTo2(pos);
+					while (oneDigit.Length < oneDigitLength)
+						oneDigit = "0" + oneDigit;
 
-                    secondInputIn2 += oneDigit;
-                }
+					secondInputIn2 += oneDigit;
+				}
 
 				this.position = position;
-            }
+			}
 			else
-                this.position = -1;
-        }
+				this.position = -1;
+		}
 
 		public string CalculateHash()
 		{
@@ -1730,14 +1740,14 @@ namespace _5_crypto_2_final_ver
 
 			result = inputIn2;
 
-            //Шаг 1
-            result += "1";
+			//Шаг 1
+			result += "1";
 
 			while (result.Length % 512 != 448)
-                result += "0";
+				result += "0";
 
 			numberOfWords = result.Length / wordLength;
-            for (int i = 0; i < numberOfWords; i++)
+			for (int i = 0; i < numberOfWords; i++)
 			{
 				oneWord = result.Substring(i * wordLength, wordLength);
 
@@ -1751,37 +1761,37 @@ namespace _5_crypto_2_final_ver
 			if (position != -1)
 			{
 				result2 = secondInputIn2;
-                result2 += "1";
+				result2 += "1";
 
-                while (result2.Length % 512 != 448)
-                    result2 += "0";
+				while (result2.Length % 512 != 448)
+					result2 += "0";
 
-                numberOfWords = result2.Length / wordLength;
-                for (int i = 0; i < numberOfWords; i++)
-                {
-                    oneWord = result2.Substring(i * wordLength, wordLength);
+				numberOfWords = result2.Length / wordLength;
+				for (int i = 0; i < numberOfWords; i++)
+				{
+					oneWord = result2.Substring(i * wordLength, wordLength);
 
-                    for (int j = 0; j < oneWord.Length / byteLength; j++)
-                    {
-                        result2 = result2.Remove(i * wordLength + j * byteLength, byteLength);
-                        result2 = result2.Insert(i * wordLength + j * byteLength, oneWord.Substring(oneWord.Length - (j + 1) * byteLength, byteLength));
-                    }
-                }
-            }
+					for (int j = 0; j < oneWord.Length / byteLength; j++)
+					{
+						result2 = result2.Remove(i * wordLength + j * byteLength, byteLength);
+						result2 = result2.Insert(i * wordLength + j * byteLength, oneWord.Substring(oneWord.Length - (j + 1) * byteLength, byteLength));
+					}
+				}
+			}
 			
 			//Шаг 2
 			startLengthIn2 = Functions.ConvertTo2(startLength);
 			while (startLengthIn2.Length < 2 * wordLength)
 				startLengthIn2 = "0" + startLengthIn2;
 
-            result += startLengthIn2.Substring(wordLength, wordLength);
-            result += startLengthIn2.Substring(0, wordLength);
+			result += startLengthIn2.Substring(wordLength, wordLength);
+			result += startLengthIn2.Substring(0, wordLength);
 
 			if (position != -1)
 			{
-                result2 += startLengthIn2.Substring(wordLength, wordLength);
-                result2 += startLengthIn2.Substring(0, wordLength);
-            }
+				result2 += startLengthIn2.Substring(wordLength, wordLength);
+				result2 += startLengthIn2.Substring(0, wordLength);
+			}
 
 			N = result.Length / wordLength;
 
@@ -1802,9 +1812,9 @@ namespace _5_crypto_2_final_ver
 			{
 				buffer2[0] = buffer[0];
 				buffer2[1] = buffer[1];
-                buffer2[2] = buffer[2];
-                buffer2[3] = buffer[3];
-            }
+				buffer2[2] = buffer[2];
+				buffer2[3] = buffer[3];
+			}
 
 			for (int i = 0; i < T.Length; i++)
 				T[i] = Math.Floor(mod * Math.Abs(Math.Sin(i + 1)));
@@ -1814,92 +1824,92 @@ namespace _5_crypto_2_final_ver
 			{
 				oneWord = result.Substring(i * 16 * wordLength, 16 * wordLength);
 
-                for (int j = 0; j < buffer.Length; j++)
+				for (int j = 0; j < buffer.Length; j++)
 					currentValueOfBuffer[j] = buffer[j];
 
-                if (position != -1)
+				if (position != -1)
 				{
-                    oneWord2 = result2.Substring(i * N * wordLength, N * wordLength);
-                    for (int j = 0; j < buffer2.Length; j++)
-                        currentValueOfBuffer2[j] = buffer2[j];
-                }
+					oneWord2 = result2.Substring(i * N * wordLength, N * wordLength);
+					for (int j = 0; j < buffer2.Length; j++)
+						currentValueOfBuffer2[j] = buffer2[j];
+				}
 
 				//Раунд 1
 				buffer = CalculateRound1(buffer, oneWord, T);
 
-                if (position != -1)
+				if (position != -1)
 				{
-                    buffer2 = CalculateRound1(buffer2, oneWord2, T);
+					buffer2 = CalculateRound1(buffer2, oneWord2, T);
 					differencies[0] = FindDifferences(buffer[0] + buffer[1] + buffer[2] + buffer[3], buffer2[0] + buffer2[1] + buffer2[2] + buffer2[3]);
-                    resultOfCheck += string.Format("Количество изменившихся бит в {0} блоке в {1} раунде равно {2}\n", (i + 1), 1, differencies[0]);
-                }
+					resultOfCheck += string.Format("Количество изменившихся бит в {0} блоке в {1} раунде равно {2}\n", (i + 1), 1, differencies[0]);
+				}
 
 
 				//Раунд 2
 				buffer = CalculateRound2(buffer, oneWord, T);
 
-                if (position != -1)
+				if (position != -1)
 				{
-                    buffer2 = CalculateRound2(buffer2, oneWord2, T);
+					buffer2 = CalculateRound2(buffer2, oneWord2, T);
 					differencies[1] = FindDifferences(buffer[0] + buffer[1] + buffer[2] + buffer[3], buffer2[0] + buffer2[1] + buffer2[2] + buffer2[3]);
-                    resultOfCheck += string.Format("Количество изменившихся бит в {0} блоке в {1} раунде равно {2}\n", (i + 1), 2, differencies[1]);
-                }
+					resultOfCheck += string.Format("Количество изменившихся бит в {0} блоке в {1} раунде равно {2}\n", (i + 1), 2, differencies[1]);
+				}
 
 
 				//Раунд 3
 				buffer = CalculateRound3(buffer, oneWord, T);
 
-                if (position != -1)
+				if (position != -1)
 				{
-                    buffer2 = CalculateRound3(buffer2, oneWord2, T);
+					buffer2 = CalculateRound3(buffer2, oneWord2, T);
 					differencies[2] = FindDifferences(buffer[0] + buffer[1] + buffer[2] + buffer[3], buffer2[0] + buffer2[1] + buffer2[2] + buffer2[3]);
-                    resultOfCheck += string.Format("Количество изменившихся бит в {0} блоке в {1} раунде равно {2}\n", (i + 1), 3, differencies[2]);
-                }
+					resultOfCheck += string.Format("Количество изменившихся бит в {0} блоке в {1} раунде равно {2}\n", (i + 1), 3, differencies[2]);
+				}
 
 
 				//Раунд 4
 				buffer = CalculateRound4(buffer, oneWord, T);
 
-                if (position != -1)
+				if (position != -1)
 				{
-                    buffer2 = CalculateRound4(buffer2, oneWord2, T);
+					buffer2 = CalculateRound4(buffer2, oneWord2, T);
 					differencies[3] = FindDifferences(buffer[0] + buffer[1] + buffer[2] + buffer[3], buffer2[0] + buffer2[1] + buffer2[2] + buffer2[3]);
-                    resultOfCheck += string.Format("Количество изменившихся бит в {0} блоке в {1} раунде равно {2}\n", (i + 1), 4, differencies[3]);
+					resultOfCheck += string.Format("Количество изменившихся бит в {0} блоке в {1} раунде равно {2}\n", (i + 1), 4, differencies[3]);
 
 					resultOfCheck += "Номера раундов:\n";
 					for (int j = 0; j < 4; j++)
 						resultOfCheck += string.Format("{0}\n", (j + 1));
-                    resultOfCheck += "\nЧисло различий:\n";
-                    for (int j = 0; j < 4; j++)
-                        resultOfCheck += string.Format("{0}\n", differencies[j]);
+					resultOfCheck += "\nЧисло различий:\n";
+					for (int j = 0; j < 4; j++)
+						resultOfCheck += string.Format("{0}\n", differencies[j]);
 
-                    return resultOfCheck;
+					return resultOfCheck;
 				}
 
 
 				//Конец раундов
 				buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(currentValueOfBuffer[0], 2, "01")) % mod);
-                while (buffer[0].Length < wordLength)
-                    buffer[0] = "0" + buffer[0];
+				while (buffer[0].Length < wordLength)
+					buffer[0] = "0" + buffer[0];
 
-                buffer[1] = Functions.ConvertDoubleTo2(Functions.ConvertTo10(buffer[1], 2, "01") + (Functions.ConvertTo10(currentValueOfBuffer[1], 2, "01")) % mod);
-                while (buffer[1].Length < wordLength)
-                    buffer[1] = "0" + buffer[1];
+				buffer[1] = Functions.ConvertDoubleTo2(Functions.ConvertTo10(buffer[1], 2, "01") + (Functions.ConvertTo10(currentValueOfBuffer[1], 2, "01")) % mod);
+				while (buffer[1].Length < wordLength)
+					buffer[1] = "0" + buffer[1];
 
-                buffer[2] = Functions.ConvertDoubleTo2(Functions.ConvertTo10(buffer[2], 2, "01") + (Functions.ConvertTo10(currentValueOfBuffer[2], 2, "01")) % mod);
-                while (buffer[2].Length < wordLength)
-                    buffer[2] = "0" + buffer[2];
+				buffer[2] = Functions.ConvertDoubleTo2(Functions.ConvertTo10(buffer[2], 2, "01") + (Functions.ConvertTo10(currentValueOfBuffer[2], 2, "01")) % mod);
+				while (buffer[2].Length < wordLength)
+					buffer[2] = "0" + buffer[2];
 
-                buffer[3] = Functions.ConvertDoubleTo2(Functions.ConvertTo10(buffer[3], 2, "01") + (Functions.ConvertTo10(currentValueOfBuffer[3], 2, "01")) % mod);
-                while (buffer[3].Length < wordLength)
-                    buffer[3] = "0" + buffer[3];
-            }
+				buffer[3] = Functions.ConvertDoubleTo2(Functions.ConvertTo10(buffer[3], 2, "01") + (Functions.ConvertTo10(currentValueOfBuffer[3], 2, "01")) % mod);
+				while (buffer[3].Length < wordLength)
+					buffer[3] = "0" + buffer[3];
+			}
 
 			result = "";
 			for (int i = 0; i < buffer.Length; i++)
 			{
 				for (int j = 0; j < buffer[i].Length / byteLength; j++)
-                    result += buffer[i].Substring(buffer[i].Length - (j + 1) * byteLength, byteLength);
+					result += buffer[i].Substring(buffer[i].Length - (j + 1) * byteLength, byteLength);
 			}
 
 			oneWord = result;
@@ -1907,306 +1917,306 @@ namespace _5_crypto_2_final_ver
 
 			for (int i = 0; i < oneWord.Length / oneDigitLength; i++)
 			{
-                result += alphabet[(int)Functions.ConvertTo10(oneWord.Substring(i * oneDigitLength, oneDigitLength), 2, "01")];
-                if ((i + 1) % byteLength == 0)
-                    result += " ";
-            }
+				result += alphabet[(int)Functions.ConvertTo10(oneWord.Substring(i * oneDigitLength, oneDigitLength), 2, "01")];
+				if ((i + 1) % byteLength == 0)
+					result += " ";
+			}
 
 			return result;
-        }
+		}
 
 		private string[] CalculateRound1(string[] buffer, string oneWord, double[] T)
 		{
-            //Строка 1
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(F(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(0 * wordLength, wordLength), 2, "01") + T[1 - 1]) % mod), 7)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Строка 1
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(F(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(0 * wordLength, wordLength), 2, "01") + T[1 - 1]) % mod), 7)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(F(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(1 * wordLength, wordLength), 2, "01") + T[2 - 1]) % mod), 12)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(F(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(1 * wordLength, wordLength), 2, "01") + T[2 - 1]) % mod), 12)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(F(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(2 * wordLength, wordLength), 2, "01") + T[3 - 1]) % mod), 17)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(F(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(2 * wordLength, wordLength), 2, "01") + T[3 - 1]) % mod), 17)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(F(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(3 * wordLength, wordLength), 2, "01") + T[4 - 1]) % mod), 22)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(F(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(3 * wordLength, wordLength), 2, "01") + T[4 - 1]) % mod), 22)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            //Строка 2
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(F(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(4 * wordLength, wordLength), 2, "01") + T[5 - 1]) % mod), 7)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Строка 2
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(F(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(4 * wordLength, wordLength), 2, "01") + T[5 - 1]) % mod), 7)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(F(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(5 * wordLength, wordLength), 2, "01") + T[6 - 1]) % mod), 12)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(F(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(5 * wordLength, wordLength), 2, "01") + T[6 - 1]) % mod), 12)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(F(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(6 * wordLength, wordLength), 2, "01") + T[7 - 1]) % mod), 17)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(F(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(6 * wordLength, wordLength), 2, "01") + T[7 - 1]) % mod), 17)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(F(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(7 * wordLength, wordLength), 2, "01") + T[8 - 1]) % mod), 22)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(F(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(7 * wordLength, wordLength), 2, "01") + T[8 - 1]) % mod), 22)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            //Строка 3
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(F(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(8 * wordLength, wordLength), 2, "01") + T[9 - 1]) % mod), 7)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Строка 3
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(F(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(8 * wordLength, wordLength), 2, "01") + T[9 - 1]) % mod), 7)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(F(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(9 * wordLength, wordLength), 2, "01") + T[10 - 1]) % mod), 12)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(F(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(9 * wordLength, wordLength), 2, "01") + T[10 - 1]) % mod), 12)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(F(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(10 * wordLength, wordLength), 2, "01") + T[11 - 1]) % mod), 17)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(F(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(10 * wordLength, wordLength), 2, "01") + T[11 - 1]) % mod), 17)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(F(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(11 * wordLength, wordLength), 2, "01") + T[12 - 1]) % mod), 22)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(F(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(11 * wordLength, wordLength), 2, "01") + T[12 - 1]) % mod), 22)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            //Строка 4
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(F(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(12 * wordLength, wordLength), 2, "01") + T[13 - 1]) % mod), 7)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Строка 4
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(F(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(12 * wordLength, wordLength), 2, "01") + T[13 - 1]) % mod), 7)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(F(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(13 * wordLength, wordLength), 2, "01") + T[14 - 1]) % mod), 12)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(F(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(13 * wordLength, wordLength), 2, "01") + T[14 - 1]) % mod), 12)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(F(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(14 * wordLength, wordLength), 2, "01") + T[15 - 1]) % mod), 17)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(F(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(14 * wordLength, wordLength), 2, "01") + T[15 - 1]) % mod), 17)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(F(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(15 * wordLength, wordLength), 2, "01") + T[16 - 1]) % mod), 22)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(F(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(15 * wordLength, wordLength), 2, "01") + T[16 - 1]) % mod), 22)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            return buffer;
-        }
+			return buffer;
+		}
 
 		private string[] CalculateRound2(string[] buffer, string oneWord, double[] T)
 		{
-            //Раунд 2
-            //Строка 1
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(G(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(1 * wordLength, wordLength), 2, "01") + T[17 - 1]) % mod), 5)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Раунд 2
+			//Строка 1
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(G(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(1 * wordLength, wordLength), 2, "01") + T[17 - 1]) % mod), 5)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(G(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(6 * wordLength, wordLength), 2, "01") + T[18 - 1]) % mod), 9)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(G(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(6 * wordLength, wordLength), 2, "01") + T[18 - 1]) % mod), 9)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(G(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(11 * wordLength, wordLength), 2, "01") + T[19 - 1]) % mod), 14)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(G(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(11 * wordLength, wordLength), 2, "01") + T[19 - 1]) % mod), 14)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(G(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(0 * wordLength, wordLength), 2, "01") + T[20 - 1]) % mod), 20)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(G(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(0 * wordLength, wordLength), 2, "01") + T[20 - 1]) % mod), 20)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            //Строка 2
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(G(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(5 * wordLength, wordLength), 2, "01") + T[21 - 1]) % mod), 5)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Строка 2
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(G(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(5 * wordLength, wordLength), 2, "01") + T[21 - 1]) % mod), 5)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(G(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(10 * wordLength, wordLength), 2, "01") + T[22 - 1]) % mod), 9)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(G(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(10 * wordLength, wordLength), 2, "01") + T[22 - 1]) % mod), 9)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(G(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(15 * wordLength, wordLength), 2, "01") + T[23 - 1]) % mod), 14)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(G(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(15 * wordLength, wordLength), 2, "01") + T[23 - 1]) % mod), 14)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(G(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(4 * wordLength, wordLength), 2, "01") + T[24 - 1]) % mod), 20)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(G(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(4 * wordLength, wordLength), 2, "01") + T[24 - 1]) % mod), 20)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            //Строка 3
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(G(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(9 * wordLength, wordLength), 2, "01") + T[25 - 1]) % mod), 5)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Строка 3
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(G(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(9 * wordLength, wordLength), 2, "01") + T[25 - 1]) % mod), 5)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(G(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(14 * wordLength, wordLength), 2, "01") + T[26 - 1]) % mod), 9)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(G(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(14 * wordLength, wordLength), 2, "01") + T[26 - 1]) % mod), 9)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(G(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(3 * wordLength, wordLength), 2, "01") + T[27 - 1]) % mod), 14)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(G(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(3 * wordLength, wordLength), 2, "01") + T[27 - 1]) % mod), 14)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(G(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(8 * wordLength, wordLength), 2, "01") + T[28 - 1]) % mod), 20)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(G(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(8 * wordLength, wordLength), 2, "01") + T[28 - 1]) % mod), 20)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            //Строка 4
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(G(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(13 * wordLength, wordLength), 2, "01") + T[29 - 1]) % mod), 5)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Строка 4
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(G(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(13 * wordLength, wordLength), 2, "01") + T[29 - 1]) % mod), 5)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(G(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(2 * wordLength, wordLength), 2, "01") + T[30 - 1]) % mod), 9)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(G(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(2 * wordLength, wordLength), 2, "01") + T[30 - 1]) % mod), 9)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(G(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(7 * wordLength, wordLength), 2, "01") + T[31 - 1]) % mod), 14)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(G(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(7 * wordLength, wordLength), 2, "01") + T[31 - 1]) % mod), 14)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(G(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(12 * wordLength, wordLength), 2, "01") + T[32 - 1]) % mod), 20)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(G(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(12 * wordLength, wordLength), 2, "01") + T[32 - 1]) % mod), 20)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            return buffer;
-        }
+			return buffer;
+		}
 
 		private string[] CalculateRound3(string[] buffer, string oneWord, double[] T)
 		{
-            //Строка 1
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(H(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(5 * wordLength, wordLength), 2, "01") + T[33 - 1]) % mod), 4)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Строка 1
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(H(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(5 * wordLength, wordLength), 2, "01") + T[33 - 1]) % mod), 4)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(H(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(8 * wordLength, wordLength), 2, "01") + T[34 - 1]) % mod), 11)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(H(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(8 * wordLength, wordLength), 2, "01") + T[34 - 1]) % mod), 11)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(H(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(11 * wordLength, wordLength), 2, "01") + T[35 - 1]) % mod), 16)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(H(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(11 * wordLength, wordLength), 2, "01") + T[35 - 1]) % mod), 16)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(H(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(14 * wordLength, wordLength), 2, "01") + T[36 - 1]) % mod), 23)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(H(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(14 * wordLength, wordLength), 2, "01") + T[36 - 1]) % mod), 23)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            //Строка 2
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(H(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(1 * wordLength, wordLength), 2, "01") + T[37 - 1]) % mod), 4)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Строка 2
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(H(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(1 * wordLength, wordLength), 2, "01") + T[37 - 1]) % mod), 4)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(H(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(4 * wordLength, wordLength), 2, "01") + T[38 - 1]) % mod), 11)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(H(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(4 * wordLength, wordLength), 2, "01") + T[38 - 1]) % mod), 11)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(H(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(7 * wordLength, wordLength), 2, "01") + T[39 - 1]) % mod), 16)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(H(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(7 * wordLength, wordLength), 2, "01") + T[39 - 1]) % mod), 16)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(H(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(10 * wordLength, wordLength), 2, "01") + T[40 - 1]) % mod), 23)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(H(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(10 * wordLength, wordLength), 2, "01") + T[40 - 1]) % mod), 23)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            //Строка 3
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(H(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(13 * wordLength, wordLength), 2, "01") + T[41 - 1]) % mod), 4)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Строка 3
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(H(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(13 * wordLength, wordLength), 2, "01") + T[41 - 1]) % mod), 4)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(H(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(0 * wordLength, wordLength), 2, "01") + T[42 - 1]) % mod), 11)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(H(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(0 * wordLength, wordLength), 2, "01") + T[42 - 1]) % mod), 11)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(H(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(3 * wordLength, wordLength), 2, "01") + T[43 - 1]) % mod), 16)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(H(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(3 * wordLength, wordLength), 2, "01") + T[43 - 1]) % mod), 16)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(H(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(6 * wordLength, wordLength), 2, "01") + T[44 - 1]) % mod), 23)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(H(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(6 * wordLength, wordLength), 2, "01") + T[44 - 1]) % mod), 23)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            //Строка 4
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(H(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(9 * wordLength, wordLength), 2, "01") + T[45 - 1]) % mod), 4)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Строка 4
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(H(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(9 * wordLength, wordLength), 2, "01") + T[45 - 1]) % mod), 4)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(H(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(12 * wordLength, wordLength), 2, "01") + T[46 - 1]) % mod), 11)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(H(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(12 * wordLength, wordLength), 2, "01") + T[46 - 1]) % mod), 11)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(H(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(15 * wordLength, wordLength), 2, "01") + T[47 - 1]) % mod), 16)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(H(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(15 * wordLength, wordLength), 2, "01") + T[47 - 1]) % mod), 16)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(H(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(2 * wordLength, wordLength), 2, "01") + T[48 - 1]) % mod), 23)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(H(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(2 * wordLength, wordLength), 2, "01") + T[48 - 1]) % mod), 23)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            return buffer;
-        }
+			return buffer;
+		}
 
 		private string[] CalculateRound4(string[] buffer, string oneWord, double[] T)
 		{
-            //Строка 1
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(I(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(0 * wordLength, wordLength), 2, "01") + T[49 - 1]) % mod), 6)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Строка 1
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(I(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(0 * wordLength, wordLength), 2, "01") + T[49 - 1]) % mod), 6)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(I(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(7 * wordLength, wordLength), 2, "01") + T[50 - 1]) % mod), 10)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(I(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(7 * wordLength, wordLength), 2, "01") + T[50 - 1]) % mod), 10)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(I(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(14 * wordLength, wordLength), 2, "01") + T[51 - 1]) % mod), 15)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(I(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(14 * wordLength, wordLength), 2, "01") + T[51 - 1]) % mod), 15)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(I(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(5 * wordLength, wordLength), 2, "01") + T[52 - 1]) % mod), 21)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(I(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(5 * wordLength, wordLength), 2, "01") + T[52 - 1]) % mod), 21)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            //Строка 2
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(I(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(12 * wordLength, wordLength), 2, "01") + T[53 - 1]) % mod), 6)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Строка 2
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(I(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(12 * wordLength, wordLength), 2, "01") + T[53 - 1]) % mod), 6)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(I(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(3 * wordLength, wordLength), 2, "01") + T[54 - 1]) % mod), 10)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(I(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(3 * wordLength, wordLength), 2, "01") + T[54 - 1]) % mod), 10)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(I(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(10 * wordLength, wordLength), 2, "01") + T[55 - 1]) % mod), 15)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(I(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(10 * wordLength, wordLength), 2, "01") + T[55 - 1]) % mod), 15)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(I(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(1 * wordLength, wordLength), 2, "01") + T[56 - 1]) % mod), 21)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(I(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(1 * wordLength, wordLength), 2, "01") + T[56 - 1]) % mod), 21)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            //Строка 3
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(I(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(8 * wordLength, wordLength), 2, "01") + T[57 - 1]) % mod), 6)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Строка 3
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(I(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(8 * wordLength, wordLength), 2, "01") + T[57 - 1]) % mod), 6)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(I(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(15 * wordLength, wordLength), 2, "01") + T[58 - 1]) % mod), 10)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(I(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(15 * wordLength, wordLength), 2, "01") + T[58 - 1]) % mod), 10)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(I(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(6 * wordLength, wordLength), 2, "01") + T[59 - 1]) % mod), 15)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(I(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(6 * wordLength, wordLength), 2, "01") + T[59 - 1]) % mod), 15)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(I(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(13 * wordLength, wordLength), 2, "01") + T[60 - 1]) % mod), 21)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(I(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(13 * wordLength, wordLength), 2, "01") + T[60 - 1]) % mod), 21)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            //Строка 4
-            buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(I(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(4 * wordLength, wordLength), 2, "01") + T[61 - 1]) % mod), 6)) % mod) % mod);
-            while (buffer[0].Length < wordLength)
-                buffer[0] = "0" + buffer[0];
+			//Строка 4
+			buffer[0] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[1], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[0], 2, "01") + Functions.ConvertTo10(I(buffer[1], buffer[2], buffer[3]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(4 * wordLength, wordLength), 2, "01") + T[61 - 1]) % mod), 6)) % mod) % mod);
+			while (buffer[0].Length < wordLength)
+				buffer[0] = "0" + buffer[0];
 
-            buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(I(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(11 * wordLength, wordLength), 2, "01") + T[62 - 1]) % mod), 10)) % mod) % mod);
-            while (buffer[3].Length < wordLength)
-                buffer[3] = "0" + buffer[3];
+			buffer[3] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[0], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[3], 2, "01") + Functions.ConvertTo10(I(buffer[0], buffer[1], buffer[2]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(11 * wordLength, wordLength), 2, "01") + T[62 - 1]) % mod), 10)) % mod) % mod);
+			while (buffer[3].Length < wordLength)
+				buffer[3] = "0" + buffer[3];
 
-            buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(I(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(2 * wordLength, wordLength), 2, "01") + T[63 - 1]) % mod), 15)) % mod) % mod);
-            while (buffer[2].Length < wordLength)
-                buffer[2] = "0" + buffer[2];
+			buffer[2] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[3], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[2], 2, "01") + Functions.ConvertTo10(I(buffer[3], buffer[0], buffer[1]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(2 * wordLength, wordLength), 2, "01") + T[63 - 1]) % mod), 15)) % mod) % mod);
+			while (buffer[2].Length < wordLength)
+				buffer[2] = "0" + buffer[2];
 
-            buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(I(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(9 * wordLength, wordLength), 2, "01") + T[64 - 1]) % mod), 21)) % mod) % mod);
-            while (buffer[1].Length < wordLength)
-                buffer[1] = "0" + buffer[1];
+			buffer[1] = Functions.ConvertDoubleTo2((Functions.ConvertTo10(buffer[2], 2, "01") + Convert.ToDouble(CyclicShift2(Convert.ToUInt32((Functions.ConvertTo10(buffer[1], 2, "01") + Functions.ConvertTo10(I(buffer[2], buffer[3], buffer[0]), 2, "01") + Functions.ConvertTo10(oneWord.Substring(9 * wordLength, wordLength), 2, "01") + T[64 - 1]) % mod), 21)) % mod) % mod);
+			while (buffer[1].Length < wordLength)
+				buffer[1] = "0" + buffer[1];
 
-            return buffer;
-        }
+			return buffer;
+		}
 
 		private uint CyclicShift2(uint x, int s)
 		{
@@ -2214,29 +2224,29 @@ namespace _5_crypto_2_final_ver
 			return ((x << s) | (x >> (wordLength - s))) & 0xFFFFFFFF;
 		}
 
-        private string F(string x, string y, string z)
+		private string F(string x, string y, string z)
 		{
 			//(x ^ y) v (-x ^ z)
 			return Functions.Disjunction(Functions.Conjunction(x, y), Functions.Conjunction(Functions.Negation(x), z));
 		}
 
-        private string G(string x, string y, string z)
-        {
-            //(x ^ z) v (-z ^ y)
-            return Functions.Disjunction(Functions.Conjunction(x, z), Functions.Conjunction(Functions.Negation(z), y));
-        }
+		private string G(string x, string y, string z)
+		{
+			//(x ^ z) v (-z ^ y)
+			return Functions.Disjunction(Functions.Conjunction(x, z), Functions.Conjunction(Functions.Negation(z), y));
+		}
 
-        private string H(string x, string y, string z)
-        {
-            //x + y + z
-            return Functions.XOR(Functions.XOR(x, y), z);
-        }
+		private string H(string x, string y, string z)
+		{
+			//x + y + z
+			return Functions.XOR(Functions.XOR(x, y), z);
+		}
 
-        private string I(string x, string y, string z)
-        {
-            //y + (-z v x)
-            return Functions.XOR(y, Functions.Disjunction(Functions.Negation(z), x));
-        }
+		private string I(string x, string y, string z)
+		{
+			//y + (-z v x)
+			return Functions.XOR(y, Functions.Disjunction(Functions.Negation(z), x));
+		}
 
 		private int FindDifferences(string x, string y)
 		{
@@ -2251,7 +2261,370 @@ namespace _5_crypto_2_final_ver
 
 			return number;
 		}
-    }
+	}
+
+
+	public class Yarrow160Class
+	{
+        private static int byteSize = 8;
+        private static int k = 64;
+		private static int messageSize = 64;
+		private static int mod = messageSize / byteSize;
+        private static double mod3 = Math.Pow(2, messageSize / 3);
+		private static int sha1OutputSize = 20;
+
+        private uint m;
+		private uint pg;
+		private uint pt;
+		private ulong c0;
+
+		private byte[] c;
+        SHA1 sha1;
+
+		public uint totalNumberOfBytes;
+		public string savedV;
+		public string output;
+
+
+        public Yarrow160Class(string input)
+		{
+			string[] parameters;
+
+			if (input.Length == 0)
+				throw new Exception("Вы не ввели параметры генератора.");
+
+			parameters = input.Split(" ");
+
+			try
+			{
+				m = Convert.ToUInt32(parameters[0]);
+				pg = Convert.ToUInt32(parameters[1]);
+				pt = Convert.ToUInt32(parameters[2]);
+				c0 = Convert.ToUInt64(parameters[3]);
+			}
+			catch
+			{
+				throw new Exception("Один из параметров введен не правильно.");
+			}
+
+			if (m == 0)
+				throw new Exception("Параметр m должен быть больше 0.");
+
+			if (pg == 0 || pg >= mod3)
+				throw new Exception("Параметр Pg должен быть больше 0 и меньше 2^(n/3).");
+
+			if (pt <= pg)
+				throw new Exception("Параметр Pt должен быть больше Pg.");
+
+			sha1 = SHA1.Create();
+
+        }
+
+		public void GenerateSequence()
+		{
+			int currentTime;
+			uint currentPg, currentPt, t;
+            DateTime date;
+			byte[] v, v0, vi = new byte[sha1OutputSize],
+				bytesResult = new byte[0], key, tByte, indexInBytes = new byte[4];
+            
+			string oneByte;
+
+            //________________________________
+            // 1.
+
+            // 4)
+            date = DateTime.Now;
+			currentTime = date.Millisecond + date.Second * 1000 + date.Minute * 60 * 1000 + date.Hour * 60 * 60 * 1000;
+			
+			v = BitConverter.GetBytes(currentTime);
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(v);
+
+            key = sha1.ComputeHash(v);
+            key = key.Take(k / byteSize).ToArray();
+
+            // 5)
+            t = 0;
+			tByte = new byte[4];
+
+			// 6)
+			c = BitConverter.GetBytes(c0);
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(c);
+
+			// 7)
+			currentPg = pg;
+			currentPt = pt;
+
+            //________________________________
+            // 2.
+			for (uint i = 0; i < m; i++)
+			{
+				// 1)
+				if (currentPg == 0)
+				{
+					key = G(i, key);
+					currentPg = pg;
+				}
+
+				// 2)
+				if (currentPt == 0)
+				{
+					v0 = sha1.ComputeHash(Concatenation(v, tByte));
+					v0.CopyTo(vi, 0);
+
+					for (uint j = 1; j <= t; j++)
+					{
+                        indexInBytes = BitConverter.GetBytes(j);
+                        if (BitConverter.IsLittleEndian)
+                            Array.Reverse(indexInBytes);
+
+						vi = sha1.ComputeHash(Concatenation(Concatenation(vi, v0), indexInBytes));
+                    }
+					vi = sha1.ComputeHash(Concatenation(vi, key));
+
+					key = H(vi);
+
+					c = Encrypt(new byte[1] {0}, key);
+
+                    currentPg = pg;
+					currentPt = pt;
+
+					t++;
+					tByte = Add(tByte);
+                }
+
+                // 3)
+                bytesResult = Concatenation(bytesResult, G(i, key));
+
+				// 4)
+				currentPg--;
+				currentPt--;
+			}
+
+			output = "";
+			totalNumberOfBytes = 0;
+
+			for (int i = 0; i < bytesResult.Length; i++)
+			{
+				oneByte = Functions.ConvertTo2(bytesResult[i]);
+				while (oneByte.Length < byteSize)
+					oneByte = "0" + oneByte;
+
+                output += oneByte;
+
+				totalNumberOfBytes++;
+            }
+
+			savedV = "";
+			for (int i = 0; i < v.Length; i++)
+			{
+                oneByte = Functions.ConvertTo2(v[i]);
+                while (oneByte.Length < byteSize)
+                    oneByte = "0" + oneByte;
+
+                savedV += oneByte;
+
+                if ((i + 1) % 4 == 0)
+                    savedV += "\n";
+            }
+		}
+
+		public string TestGenerator()
+		{
+			int[] changedSequence;
+			string result = "";
+			double stat;
+			double[] stats;
+
+			m = 10000 / Convert.ToUInt32(messageSize) + 1;
+			GenerateSequence();
+
+			changedSequence = new int[output.Length];
+			for (int i = 0; i < output.Length; i++)
+				changedSequence[i] = 2 * (output[i] - '0') - 1;
+
+			//Частотный тест
+			stat = FrequencyTest(changedSequence);
+			result += string.Format("Результат частотного теста: {0} <= 1.82138636, ", stat);
+			result += stat <= 1.82138636 ? "тест пройден" : "тест не пройден";
+			result += "\n\n";
+
+			//Тест на последовательность одинаковых бит
+			stat = SequenceOfIdenticalBitsTest();
+			result += string.Format("Результат теста на последовательность одинаковых бит: {0} <= 1.82138636, ", stat);
+            result += stat <= 1.82138636 ? "тест пройден" : "тест не пройден";
+            result += "\n\n";
+
+			//Расширенный тест на произвольне отклонения
+			stats = ExtendedRandomnessTest(changedSequence);
+			result += "Результат расширенного теста на произвольные отклонения:\n";
+			for (int i = 0; i < stats.Length; i++)
+			{
+				result += string.Format("{0}) {1} <= 1.82138636, ", i + 1, stats[i]);
+                result += stats[i] <= 1.82138636 ? "тест пройден" : "тест не пройден";
+				result += "\n";
+            }
+
+            return result;
+		}
+
+		private double FrequencyTest(int[] sequence)
+		{
+			int summary = 0;
+
+			for (int i = 0; i < sequence.Length; i++)
+				summary += sequence[i];
+
+			return Math.Abs(summary) / Math.Sqrt(sequence.Length);
+		}
+
+		private double SequenceOfIdenticalBitsTest()
+		{
+			double pi = 0;
+			int r = 1;
+
+			for (int i = 0; i < output.Length; i++)
+				pi += output[i] - '0';
+
+			pi /= output.Length;
+
+			for (int i = 0; i < output.Length - 1; i++)
+				r += output[i] == output[i + 1] ? 0 : 1;
+
+			return Math.Abs(r - 2 * output.Length * pi * (1 - pi)) / (2 * Math.Sqrt(2 * output.Length) * pi * (1 - pi));
+		}
+
+		private double[] ExtendedRandomnessTest(int[] sequence)
+		{
+			double[] y = new double[18];
+			int[] si = new int[sequence.Length + 2], 
+				ksi = new int [18];
+			int l = -1;
+
+			for (int i = 0; i < sequence.Length; i++)
+				for (int j = 0; j <= i; j++)
+					si[i + 1] += sequence[j];
+
+			for (int i = 0; i < si.Length; i++)
+			{
+				if (si[i] == 0)
+					l++;
+
+				else if (si[i] >= -9 && si[i] < 0)
+					ksi[si[i] + 9]++;
+
+				else if (si[i] <= 9 && si[i] > 0)
+					ksi[si[i] + 8]++;
+            }
+
+			for (int i = 0; i < y.Length; i++)
+				y[i] = i <= 8 ? Math.Abs(ksi[i] - l) / Math.Sqrt(2 * l * Math.Abs(i - 9) - 2) : Math.Abs(ksi[i] - l) / Math.Sqrt(2 * l * Math.Abs(i - 8) - 2);
+
+            return y;
+		}
+
+		private byte[] G(uint i, byte[] key)
+		{
+			byte[] result;
+
+			c = Add(c);
+			c = Mod(c, mod);
+
+			result = Encrypt(c, key);
+			result = Mod(result, mod);
+
+			return result;
+		}
+
+		private byte[] H(byte[] s)
+		{
+			List<byte[]> si = new List<byte[]>();
+
+			si.Add(new byte[s.Length]);
+			s.CopyTo(si[0], 0);
+
+			for (int i = 1; i < k / byteSize / sha1OutputSize; i++)
+			{
+				si.Add(new byte[0]);
+				for (int j = 0; j < i; j++)
+					si[i] = Concatenation(si[i], si[j]);
+
+                si[i] = sha1.ComputeHash(si[i]);
+			}
+
+			for (int i = 1; i < si.Count; i++)
+				si[0] = Concatenation(si[0], si[i]);
+
+			return si[0].Take(k / byteSize).ToArray();
+		}
+
+		private byte[] Concatenation(byte[] b1, byte[] b2)
+		{
+			byte[] result = new byte[b1.Length + b2.Length];
+
+			b1.CopyTo(result, 0);
+			b2.CopyTo(result, b1.Length);
+
+			return result;
+		}
+
+		private byte[] Add(byte[] b)
+		{
+			byte[] newB;
+
+			for (int i = b.Length - 1; i >= 0; i--)
+			{
+				if (b[i] == 255)
+					b[i] = 0;
+				else
+				{
+					b[i]++;
+					return b;
+				}
+			}
+
+			newB = new byte[b.Length + 1];
+			newB[0] = 1;
+
+			return newB;
+		}
+
+		private byte[] Mod(byte[] b, int mod)
+		{
+			byte[] newB;
+
+			if (b.Length <= mod)
+				return b;
+
+			newB = new byte[mod];
+			for (int i = mod - 1; i >= 0; i--)
+				newB[i] = b[b.Length + i - mod];
+
+			return newB;
+		}
+
+		private byte[] Encrypt(byte[] message, byte[] key)
+		{
+			byte[] result;
+
+            DESCryptoServiceProvider provider = new DESCryptoServiceProvider();
+            ICryptoTransform transform = provider.CreateEncryptor(key, key);
+            CryptoStreamMode mode = CryptoStreamMode.Write;
+
+            MemoryStream memoryStream = new MemoryStream();
+            CryptoStream cryptoStream = new CryptoStream(memoryStream, transform, mode);
+            cryptoStream.Write(message, 0, message.Length);
+            cryptoStream.FlushFinalBlock();
+
+            result = new byte[memoryStream.Length];
+            memoryStream.Position = 0;
+            memoryStream.Read(result, 0, result.Length);
+
+			return result;
+		}
+	}
 
 
 	public static class Functions
@@ -2268,18 +2641,18 @@ namespace _5_crypto_2_final_ver
 			return ConvertTo2(number / 2) + (number % 2);
 		}
 
-        public static string ConvertDoubleTo2(double number)
-        {
-            if (number <= 1) { return number.ToString(); }
+		public static string ConvertDoubleTo2(double number)
+		{
+			if (number <= 1) { return number.ToString(); }
 			if (number % 2 == 1)
 				return ConvertDoubleTo2((number - 1) / 2) + (number % 2);
 			else
 				return ConvertDoubleTo2(number / 2) + (number % 2);
-        }
+		}
 
-        public static double ConvertTo10(string value, int pi, string alphabet)
+		public static double ConvertTo10(string value, int pi, string alphabet)
 		{
-            double result = 0;
+			double result = 0;
 
 			for (int i = 0; i < value.Length; i++)
 				result += alphabet.IndexOf(value[i]) * Math.Pow(pi, value.Length - i - 1);
@@ -2331,44 +2704,44 @@ namespace _5_crypto_2_final_ver
 			return result;
 		}
 
-        public static string Conjunction(string x, string y)
-        {
-            string result = "";
+		public static string Conjunction(string x, string y)
+		{
+			string result = "";
 
-            while (x.Length < y.Length)
-                x = "0" + x;
-            while (y.Length < x.Length)
-                y = "0" + y;
+			while (x.Length < y.Length)
+				x = "0" + x;
+			while (y.Length < x.Length)
+				y = "0" + y;
 
-            for (int i = 0; i < x.Length; i++)
-                result += ((x[i] - '0') * (y[i] - '0')).ToString();
+			for (int i = 0; i < x.Length; i++)
+				result += ((x[i] - '0') * (y[i] - '0')).ToString();
 
 			return result;
-        }
+		}
 
-        public static string Negation(string x)
-        {
-            string result = "";
+		public static string Negation(string x)
+		{
+			string result = "";
 
-            for (int i = 0; i < x.Length; i++)
-                result += (((x[i] - '0') + 1) % 2).ToString();
+			for (int i = 0; i < x.Length; i++)
+				result += (((x[i] - '0') + 1) % 2).ToString();
 
-            return result;
-        }
+			return result;
+		}
 
-        public static string XOR(string x, string y)
-        {
-            string result = "";
+		public static string XOR(string x, string y)
+		{
+			string result = "";
 
-            while (x.Length < y.Length)
-                x = "0" + x;
-            while (y.Length < x.Length)
-                y = "0" + y;
+			while (x.Length < y.Length)
+				x = "0" + x;
+			while (y.Length < x.Length)
+				y = "0" + y;
 
-            for (int i = 0; i < x.Length; i++)
-                result += (((x[i] - '0') + (y[i] - '0')) % 2).ToString();
+			for (int i = 0; i < x.Length; i++)
+				result += (((x[i] - '0') + (y[i] - '0')) % 2).ToString();
 
-            return result;
-        }
-    }
+			return result;
+		}
+	}
 }

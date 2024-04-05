@@ -159,6 +159,9 @@
     <Compile Include="VigenereCipher.xaml.cs">
       <DependentUpon>VigenereCipher.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Yarrow160.xaml.cs">
+      <DependentUpon>Yarrow160.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -229,6 +232,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="VigenereCipher.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Yarrow160.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -245,6 +245,21 @@
                     </Viewbox>
                 </Button>
             </Border>
+
+            <Border
+            Background="#FF87BFC5"
+            Margin="4">
+                            <Button
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Background="#FF87BFC5"
+                Name="Yarrow160_Button"
+                Click="GoToYarrow160">
+                    <Viewbox>
+                        <TextBlock Text="Yarrow-160"/>
+                    </Viewbox>
+                </Button>
+            </Border>
         </StackPanel>
         
         <Frame 

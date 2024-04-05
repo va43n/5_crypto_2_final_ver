@@ -1,0 +1,203 @@
+﻿<Page
+	x:Class="_5_crypto_2_final_ver.Yarrow160"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:local="using:_5_crypto_2_final_ver"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+	<Grid Background="#FFB9C5C3">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="1*" />
+			<ColumnDefinition Width="2*" />
+		</Grid.ColumnDefinitions>
+
+		<Grid.RowDefinitions>
+			<RowDefinition Height="1*" />
+			<RowDefinition Height="1*" />
+			<RowDefinition Height="2*" />
+
+		</Grid.RowDefinitions>
+
+		<Border 
+		Background="#FF9BA6A4" 
+		Grid.Column="0" 
+		Grid.Row="0" 
+		Margin="4" 
+		Name="GeneratorCoefficientsTextBlock">
+			<Viewbox>
+                <TextBlock FontFamily="Consolas">В данный файл введите<LineBreak/>параметры генератора:</TextBlock>
+			</Viewbox>
+		</Border>
+
+		<Border 
+		Background="#FF9BA6A4" 
+		Grid.Column="0" 
+		Grid.Row="1" 
+		Margin="4" 
+		Name="OutputTextBlock">
+			<Viewbox>
+                <TextBlock FontFamily="Consolas">В данном файле можно увидеть<LineBreak/>результат генерации или тестирования:</TextBlock>
+			</Viewbox>
+		</Border>
+
+		<Border 
+		Background="#FFCFDAD8" 
+		Grid.Column="1" 
+		Grid.Row="0" 
+		Margin="4">
+            <TextBox Name="GeneratorCoefficientsTextBox" TextWrapping="Wrap"  FontSize="30" FontFamily="Consolas" />
+		</Border>
+
+		<Border 
+		Background="#FFCFDAD8" 
+		Grid.Column="1" 
+		Grid.Row="1" 
+		Margin="4">
+            <TextBox Name="OutputPathTextBox" TextWrapping="Wrap"  FontSize="30" FontFamily="Consolas" />
+		</Border>
+
+		<Grid
+			Grid.Row="2"
+			Grid.Column="0"
+			Grid.ColumnSpan="2">
+
+			<Grid.RowDefinitions>
+				<RowDefinition Height="1*" />
+			</Grid.RowDefinitions>
+
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="1*" />
+				<ColumnDefinition Width="1*" />
+			</Grid.ColumnDefinitions>
+
+			<Grid
+                Grid.Row="0"
+                Grid.Column="0"
+                Margin="4">
+                
+				<Grid.RowDefinitions>
+					<RowDefinition Height="1*" />
+					<RowDefinition Height="1*" />
+				</Grid.RowDefinitions>
+
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="1*" />
+					<ColumnDefinition Width="2*" />
+				</Grid.ColumnDefinitions>
+
+				<Border 
+				Background="#FF9BA6A4" 
+				Grid.Column="0" 
+				Grid.Row="0" 
+				Margin="4" 
+				Name="GenerateButtonTextBlock">
+					<Viewbox>
+                        <TextBlock FontFamily="Consolas">Нажмите на кнопку,<LineBreak/>чтобы сгенерировать<LineBreak/>последовательность:</TextBlock>
+					</Viewbox>
+				</Border>
+
+				<Border 
+				Background="#FF9BA6A4" 
+				Grid.Column="0" 
+				Grid.Row="1" 
+				Margin="4" 
+				Name="GenerateResultTextBlock">
+					<Viewbox>
+                        <TextBlock FontFamily="Consolas">Результат генерации:</TextBlock>
+					</Viewbox>
+				</Border>
+
+				<Border 
+					Background="#FFCFDAD8" 
+					Grid.Column="1" 
+					Grid.Row="1" 
+					Margin="4">
+                    <TextBox Name="GenerateResultTextBox" TextWrapping="Wrap"  FontSize="30" FontFamily="Consolas" />
+				</Border>
+
+                <Border 
+					Grid.Column="1" 
+					Grid.Row="0" 
+					Margin="4">
+                    <Button
+						Name="GenerateButton"
+						Background="#FF87BFC5"
+						VerticalAlignment="Stretch"
+						HorizontalAlignment="Stretch"
+						Click="GenerateButton_Click">
+                        <Viewbox>
+                            <TextBlock Text="Генерация" FontFamily="Consolas" />
+                        </Viewbox>
+
+                    </Button>
+                </Border>
+            </Grid>
+
+            <Grid
+				Grid.Row="0"
+				Grid.Column="1"
+                Margin="4">
+                
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="2*" />
+                </Grid.ColumnDefinitions>
+
+                <Border 
+				Background="#FF9BA6A4" 
+				Grid.Column="0" 
+				Grid.Row="0" 
+				Margin="4" 
+				Name="TestButtonTextBlock">
+                    <Viewbox>
+                        <TextBlock FontFamily="Consolas">Нажмите на кнопку,<LineBreak/>чтобы протестировать<LineBreak/>последовательность:</TextBlock>
+                    </Viewbox>
+                </Border>
+
+                <Border 
+				Background="#FF9BA6A4" 
+				Grid.Column="0" 
+				Grid.Row="1" 
+				Margin="4" 
+				Name="TestResultTextBlock">
+                    <Viewbox>
+                        <TextBlock FontFamily="Consolas">Результат тестирования:</TextBlock>
+                    </Viewbox>
+                </Border>
+
+                <Border 
+				Background="#FFCFDAD8" 
+				Grid.Column="1" 
+				Grid.Row="1" 
+				Margin="4">
+                    <TextBox Name="TestResultTextBox" TextWrapping="Wrap"  FontSize="30" FontFamily="Consolas" />
+                </Border>
+
+                <Border 
+				Grid.Column="1" 
+				Grid.Row="0" 
+				Margin="4">
+                    <Button
+					Name="TestButton"
+					Background="#FF87BFC5"
+					VerticalAlignment="Stretch"
+					HorizontalAlignment="Stretch"
+					Click="TestButton_Click">
+                        <Viewbox>
+                            <TextBlock Text="Тестирование" FontFamily="Consolas"/>
+                        </Viewbox>
+
+                    </Button>
+                </Border>
+            </Grid>
+        </Grid>
+	</Grid>
+</Page>
