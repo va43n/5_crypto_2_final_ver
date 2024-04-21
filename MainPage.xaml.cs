@@ -10,6 +10,10 @@ using Windows.Media.Devices;
 using System.IO;
 using Microsoft.Win32.SafeHandles;
 using Windows.Networking.NetworkOperators;
+using System.Text;
+using System.ServiceModel.Channels;
+using System.Reflection;
+using System.Numerics;
 
 namespace _5_crypto_2_final_ver
 {
@@ -84,6 +88,11 @@ namespace _5_crypto_2_final_ver
 		private void GoToYarrow160(object sender, RoutedEventArgs e)
 		{
 			frame.Content = new Yarrow160();
+		}
+
+		private void GoToLibrary(object sender, RoutedEventArgs e)
+		{
+			frame.Content = new Library();
 		}
 	}
 
@@ -2266,27 +2275,27 @@ namespace _5_crypto_2_final_ver
 
 	public class Yarrow160Class
 	{
-        private static int byteSize = 8;
-        private static int k = 64;
+		private static int byteSize = 8;
+		private static int k = 64;
 		private static int messageSize = 64;
 		private static int mod = messageSize / byteSize;
-        private static double mod3 = Math.Pow(2, messageSize / 3);
+		private static double mod3 = Math.Pow(2, messageSize / 3);
 		private static int sha1OutputSize = 20;
 
-        private uint m;
+		private uint m;
 		private uint pg;
 		private uint pt;
 		private ulong c0;
 
 		private byte[] c;
-        SHA1 sha1;
+		SHA1 sha1;
 
 		public uint totalNumberOfBytes;
 		public string savedV;
 		public string output;
 
 
-        public Yarrow160Class(string input)
+		public Yarrow160Class(string input)
 		{
 			string[] parameters;
 
@@ -2318,47 +2327,47 @@ namespace _5_crypto_2_final_ver
 
 			sha1 = SHA1.Create();
 
-        }
+		}
 
 		public void GenerateSequence()
 		{
 			int currentTime;
 			uint currentPg, currentPt, t;
-            DateTime date;
+			DateTime date;
 			byte[] v, v0, vi = new byte[sha1OutputSize],
 				bytesResult = new byte[0], key, tByte, indexInBytes = new byte[4];
-            
+			
 			string oneByte;
 
-            //________________________________
-            // 1.
+			//________________________________
+			// 1.
 
-            // 4)
-            date = DateTime.Now;
+			// 4)
+			date = DateTime.Now;
 			currentTime = date.Millisecond + date.Second * 1000 + date.Minute * 60 * 1000 + date.Hour * 60 * 60 * 1000;
 			
 			v = BitConverter.GetBytes(currentTime);
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(v);
+			if (BitConverter.IsLittleEndian)
+				Array.Reverse(v);
 
-            key = sha1.ComputeHash(v);
-            key = key.Take(k / byteSize).ToArray();
+			key = sha1.ComputeHash(v);
+			key = key.Take(k / byteSize).ToArray();
 
-            // 5)
-            t = 0;
+			// 5)
+			t = 0;
 			tByte = new byte[4];
 
 			// 6)
 			c = BitConverter.GetBytes(c0);
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(c);
+			if (BitConverter.IsLittleEndian)
+				Array.Reverse(c);
 
 			// 7)
 			currentPg = pg;
 			currentPt = pt;
 
-            //________________________________
-            // 2.
+			//________________________________
+			// 2.
 			for (uint i = 0; i < m; i++)
 			{
 				// 1)
@@ -2376,27 +2385,27 @@ namespace _5_crypto_2_final_ver
 
 					for (uint j = 1; j <= t; j++)
 					{
-                        indexInBytes = BitConverter.GetBytes(j);
-                        if (BitConverter.IsLittleEndian)
-                            Array.Reverse(indexInBytes);
+						indexInBytes = BitConverter.GetBytes(j);
+						if (BitConverter.IsLittleEndian)
+							Array.Reverse(indexInBytes);
 
 						vi = sha1.ComputeHash(Concatenation(Concatenation(vi, v0), indexInBytes));
-                    }
+					}
 					vi = sha1.ComputeHash(Concatenation(vi, key));
 
 					key = H(vi);
 
 					c = Encrypt(new byte[1] {0}, key);
 
-                    currentPg = pg;
+					currentPg = pg;
 					currentPt = pt;
 
 					t++;
 					tByte = Add(tByte);
-                }
+				}
 
-                // 3)
-                bytesResult = Concatenation(bytesResult, G(i, key));
+				// 3)
+				bytesResult = Concatenation(bytesResult, G(i, key));
 
 				// 4)
 				currentPg--;
@@ -2412,23 +2421,23 @@ namespace _5_crypto_2_final_ver
 				while (oneByte.Length < byteSize)
 					oneByte = "0" + oneByte;
 
-                output += oneByte;
+				output += oneByte;
 
 				totalNumberOfBytes++;
-            }
+			}
 
 			savedV = "";
 			for (int i = 0; i < v.Length; i++)
 			{
-                oneByte = Functions.ConvertTo2(v[i]);
-                while (oneByte.Length < byteSize)
-                    oneByte = "0" + oneByte;
+				oneByte = Functions.ConvertTo2(v[i]);
+				while (oneByte.Length < byteSize)
+					oneByte = "0" + oneByte;
 
-                savedV += oneByte;
+				savedV += oneByte;
 
-                if ((i + 1) % 4 == 0)
-                    savedV += "\n";
-            }
+				if ((i + 1) % 4 == 0)
+					savedV += "\n";
+			}
 		}
 
 		public string TestGenerator()
@@ -2454,8 +2463,8 @@ namespace _5_crypto_2_final_ver
 			//Тест на последовательность одинаковых бит
 			stat = SequenceOfIdenticalBitsTest();
 			result += string.Format("Результат теста на последовательность одинаковых бит: {0} <= 1.82138636, ", stat);
-            result += stat <= 1.82138636 ? "тест пройден" : "тест не пройден";
-            result += "\n\n";
+			result += stat <= 1.82138636 ? "тест пройден" : "тест не пройден";
+			result += "\n\n";
 
 			//Расширенный тест на произвольне отклонения
 			stats = ExtendedRandomnessTest(changedSequence);
@@ -2463,11 +2472,11 @@ namespace _5_crypto_2_final_ver
 			for (int i = 0; i < stats.Length; i++)
 			{
 				result += string.Format("{0}) {1} <= 1.82138636, ", i + 1, stats[i]);
-                result += stats[i] <= 1.82138636 ? "тест пройден" : "тест не пройден";
+				result += stats[i] <= 1.82138636 ? "тест пройден" : "тест не пройден";
 				result += "\n";
-            }
+			}
 
-            return result;
+			return result;
 		}
 
 		private double FrequencyTest(int[] sequence)
@@ -2517,12 +2526,12 @@ namespace _5_crypto_2_final_ver
 
 				else if (si[i] <= 9 && si[i] > 0)
 					ksi[si[i] + 8]++;
-            }
+			}
 
 			for (int i = 0; i < y.Length; i++)
 				y[i] = i <= 8 ? Math.Abs(ksi[i] - l) / Math.Sqrt(2 * l * Math.Abs(i - 9) - 2) : Math.Abs(ksi[i] - l) / Math.Sqrt(2 * l * Math.Abs(i - 8) - 2);
 
-            return y;
+			return y;
 		}
 
 		private byte[] G(uint i, byte[] key)
@@ -2551,7 +2560,7 @@ namespace _5_crypto_2_final_ver
 				for (int j = 0; j < i; j++)
 					si[i] = Concatenation(si[i], si[j]);
 
-                si[i] = sha1.ComputeHash(si[i]);
+				si[i] = sha1.ComputeHash(si[i]);
 			}
 
 			for (int i = 1; i < si.Count; i++)
@@ -2609,20 +2618,545 @@ namespace _5_crypto_2_final_ver
 		{
 			byte[] result;
 
-            DESCryptoServiceProvider provider = new DESCryptoServiceProvider();
-            ICryptoTransform transform = provider.CreateEncryptor(key, key);
-            CryptoStreamMode mode = CryptoStreamMode.Write;
+			DESCryptoServiceProvider provider = new DESCryptoServiceProvider();
+			ICryptoTransform transform = provider.CreateEncryptor(key, key);
+			CryptoStreamMode mode = CryptoStreamMode.Write;
 
-            MemoryStream memoryStream = new MemoryStream();
-            CryptoStream cryptoStream = new CryptoStream(memoryStream, transform, mode);
-            cryptoStream.Write(message, 0, message.Length);
-            cryptoStream.FlushFinalBlock();
+			MemoryStream memoryStream = new MemoryStream();
+			CryptoStream cryptoStream = new CryptoStream(memoryStream, transform, mode);
+			cryptoStream.Write(message, 0, message.Length);
+			cryptoStream.FlushFinalBlock();
 
-            result = new byte[memoryStream.Length];
-            memoryStream.Position = 0;
-            memoryStream.Read(result, 0, result.Length);
+			result = new byte[memoryStream.Length];
+			memoryStream.Position = 0;
+			memoryStream.Read(result, 0, result.Length);
 
 			return result;
+		}
+	}
+
+
+	public static class CryptographicFunctions
+	{
+		public static string[] hashingAlgorithms = { "MD5", "SHA1", "SHA256", "SHA512" };
+
+		public static string SymmetricEncryption3DESEncrypt(string input)
+		{
+			string result;
+			string key, iv, message;
+			byte[] keyBytes, ivBytes, messageBytes;
+			int delimeterPosition;
+
+			delimeterPosition = input.IndexOf("\n");
+			if (delimeterPosition == -1 || delimeterPosition == 0 || input.Length == delimeterPosition + 1)
+				throw new Exception("Для 3DES шифрования во входном файле должны быть сообщение и ключ с IV, сообщение и параметры они должны находиться на разных строках.");
+
+			message = input.Substring(0, delimeterPosition - 1);
+			input = input.Substring(delimeterPosition + 1);
+
+			delimeterPosition = input.IndexOf(" ");
+			if (delimeterPosition == -1 || input.Length == delimeterPosition + 1)
+				throw new Exception("Для 3DES шифрования во входном файле должны быть ключ и IV, разделенные пробелом.");
+
+			key = input.Substring(0, delimeterPosition);
+			iv = input.Substring(delimeterPosition + 1);
+
+			if (key.Length != 24)
+				throw new Exception("Длина 3DES ключа должна составлять 24 байта.");
+			if (iv.Length != 8)
+				throw new Exception("Длина 3DES вектора инициализации должна составлять 8 байтов.");
+
+			try
+			{
+				keyBytes = Encoding.UTF8.GetBytes(key);
+				ivBytes = Encoding.UTF8.GetBytes(iv);
+				messageBytes = Encoding.UTF8.GetBytes(message);
+			}
+			catch
+			{
+				throw new Exception("Ключ, IV или сообщение содержат символы, не содержащиеся в кодировке UTF-8.");
+			}
+
+			using (TripleDES tripleDES = TripleDES.Create())
+			{
+				tripleDES.Key = keyBytes;
+				tripleDES.IV = ivBytes;
+				tripleDES.Mode = CipherMode.CBC;
+
+				ICryptoTransform encryptor = tripleDES.CreateEncryptor(tripleDES.Key, tripleDES.IV);
+
+				using (MemoryStream memoryStream = new MemoryStream())
+				{
+					using (CryptoStream cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+					{
+						cryptoStream.Write(messageBytes, 0, messageBytes.Length);
+						cryptoStream.FlushFinalBlock();
+
+						messageBytes = memoryStream.ToArray();
+					}
+				}
+			}
+
+			result = "Результат 3DES шифрования - набор байтов: ";
+			foreach (byte b in messageBytes)
+				result += b.ToString() + " ";
+
+			result += "\nПолученная строка: " + Encoding.UTF8.GetString(messageBytes);
+
+			return result;
+		}
+
+		public static string SymmetricEncryption3DESDecrypt(string input)
+		{
+			string[] stringBytesMessage;
+			string message, key, iv;
+			byte[] messageBytes, keyBytes, ivBytes;
+			int delimeterPosition;
+
+			delimeterPosition = input.IndexOf("\n");
+			if (delimeterPosition == -1 || delimeterPosition == 0 || input.Length == delimeterPosition + 1)
+				throw new Exception("Для 3DES дешифрования во входном файле должны быть байты сообщения и ключ с IV, сообщение и параметры они должны находиться на разных строках.");
+
+			message = input.Substring(0, delimeterPosition - 1);
+			input = input.Substring(delimeterPosition + 1);
+
+			stringBytesMessage = message.Split(" ");
+
+			try
+			{
+				messageBytes = new byte[stringBytesMessage.Length];
+
+				for (int i = 0; i < stringBytesMessage.Length; i++)
+					messageBytes[i] = Convert.ToByte(stringBytesMessage[i]);
+			}
+			catch
+			{
+				throw new Exception("Один из байтов входного сообщения не является числом от 0 до 255.");
+			}
+
+			delimeterPosition = input.IndexOf(" ");
+			if (delimeterPosition == -1 || input.Length == delimeterPosition + 1)
+				throw new Exception("Для 3DES шифрования во входном файле должны быть ключ и IV, разделенные пробелом.");
+
+			key = input.Substring(0, delimeterPosition);
+			iv = input.Substring(delimeterPosition + 1);
+
+			if (key.Length != 24)
+				throw new Exception("Длина 3DES ключа должна составлять 24 байта.");
+			if (iv.Length != 8)
+				throw new Exception("Длина 3DES вектора инициализации должна составлять 8 байтов.");
+
+			try
+			{
+				keyBytes = Encoding.UTF8.GetBytes(key);
+				ivBytes = Encoding.UTF8.GetBytes(iv);
+			}
+			catch
+			{
+				throw new Exception("Ключ или IV содержат символы, не содержащиеся в кодировке UTF-8.");
+			}
+
+			using (TripleDES tripleDES = TripleDES.Create())
+			{
+				tripleDES.Key = keyBytes;
+				tripleDES.IV = ivBytes;
+				tripleDES.Mode = CipherMode.CBC;
+
+				ICryptoTransform encryptor = tripleDES.CreateDecryptor(tripleDES.Key, tripleDES.IV);
+
+				using (MemoryStream memoryStream = new MemoryStream())
+				{
+					using (CryptoStream cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+					{
+						cryptoStream.Write(messageBytes, 0, messageBytes.Length);
+						cryptoStream.FlushFinalBlock();
+
+						messageBytes = memoryStream.ToArray();
+					}
+				}
+			}
+
+			return "Результат 3DES дешифрования - исходная строка: " + Encoding.UTF8.GetString(messageBytes);
+		}
+
+		public static string SymmetricEncryptionAES128Encrypt(string input)
+		{
+			string result;
+			string key, iv, message;
+			byte[] keyBytes, ivBytes, messageBytes;
+			int delimeterPosition;
+
+			delimeterPosition = input.IndexOf("\n");
+			if (delimeterPosition == -1 || delimeterPosition == 0 || input.Length == delimeterPosition + 1)
+				throw new Exception("Для AES-128 шифрования во входном файле должны быть сообщение и ключ с IV, сообщение и параметры они должны находиться на разных строках.");
+
+			message = input.Substring(0, delimeterPosition - 1);
+			input = input.Substring(delimeterPosition + 1);
+
+			delimeterPosition = input.IndexOf(" ");
+			if (delimeterPosition == -1 || input.Length == delimeterPosition + 1)
+				throw new Exception("Для AES-128 шифрования во входном файле должны быть ключ и IV, разделенные пробелом.");
+
+			key = input.Substring(0, delimeterPosition);
+			iv = input.Substring(delimeterPosition + 1);
+
+			if (key.Length != 16)
+				throw new Exception("Длина AES-128 ключа должна составлять 16 байтов.");
+			if (iv.Length != 16)
+				throw new Exception("Длина AES-128 вектора инициализации должна составлять 16 байтов.");
+
+			try
+			{
+				keyBytes = Encoding.UTF8.GetBytes(key);
+				ivBytes = Encoding.UTF8.GetBytes(iv);
+				messageBytes = Encoding.UTF8.GetBytes(message);
+			}
+			catch
+			{
+				throw new Exception("Ключ, IV или сообщение содержат символы, не содержащиеся в кодировке UTF-8.");
+			}
+
+			using (Aes aes = Aes.Create())
+			{
+				aes.Key = keyBytes;
+				aes.IV = ivBytes;
+				aes.Mode = CipherMode.CBC;
+
+				ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+				using (MemoryStream memoryStream = new MemoryStream())
+				{
+					using (CryptoStream cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+					{
+						cryptoStream.Write(messageBytes, 0, messageBytes.Length);
+						cryptoStream.FlushFinalBlock();
+
+						messageBytes = memoryStream.ToArray();
+					}
+				}
+			}
+
+			result = "Результат AES-128 шифрования - набор байтов: ";
+			foreach (byte b in messageBytes)
+				result += b.ToString() + " ";
+
+			result += "\nПолученная строка: " + Encoding.UTF8.GetString(messageBytes);
+
+			return result;
+		}
+
+		public static string SymmetricEncryptionAES128Decrypt(string input)
+		{
+			string[] stringBytesMessage;
+			string message, key, iv;
+			byte[] messageBytes, keyBytes, ivBytes;
+			int delimeterPosition;
+
+			delimeterPosition = input.IndexOf("\n");
+			if (delimeterPosition == -1 || delimeterPosition == 0 || input.Length == delimeterPosition + 1)
+				throw new Exception("Для AES-128 дешифрования во входном файле должны быть байты сообщения и ключ с IV, сообщение и параметры они должны находиться на разных строках.");
+
+			message = input.Substring(0, delimeterPosition - 1);
+			input = input.Substring(delimeterPosition + 1);
+
+			stringBytesMessage = message.Split(" ");
+
+			try
+			{
+				messageBytes = new byte[stringBytesMessage.Length];
+
+				for (int i = 0; i < stringBytesMessage.Length; i++)
+					messageBytes[i] = Convert.ToByte(stringBytesMessage[i]);
+			}
+			catch
+			{
+				throw new Exception("Один из байтов входного сообщения не является числом от 0 до 255.");
+			}
+
+			delimeterPosition = input.IndexOf(" ");
+			if (delimeterPosition == -1 || input.Length == delimeterPosition + 1)
+				throw new Exception("Для AES-128 шифрования во входном файле должны быть ключ и IV, разделенные пробелом.");
+
+			key = input.Substring(0, delimeterPosition);
+			iv = input.Substring(delimeterPosition + 1);
+			
+			if (key.Length != 16)
+				throw new Exception("Длина AES-128 ключа должна составлять 16 байтов.");
+			if (iv.Length != 16)
+				throw new Exception("Длина AES-128 вектора инициализации должна составлять 16 байтов.");
+
+			try
+			{
+				keyBytes = Encoding.UTF8.GetBytes(key);
+				ivBytes = Encoding.UTF8.GetBytes(iv);
+			}
+			catch
+			{
+				throw new Exception("Ключ или IV содержат символы, не содержащиеся в кодировке UTF-8.");
+			}
+
+			using (Aes aes = Aes.Create())
+			{
+				aes.Key = keyBytes;
+				aes.IV = ivBytes;
+				aes.Mode = CipherMode.CBC;
+
+				ICryptoTransform encryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+				using (MemoryStream memoryStream = new MemoryStream())
+				{
+					using (CryptoStream cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+					{
+						cryptoStream.Write(messageBytes, 0, messageBytes.Length);
+						cryptoStream.FlushFinalBlock();
+
+						messageBytes = memoryStream.ToArray();
+					}
+				}
+			}
+
+			return "Результат AES-128 дешифрования - исходная строка: " + Encoding.UTF8.GetString(messageBytes);
+		}
+
+		public static RSAParameters[] AsymmetricEncryptionRSAGetParameters()
+		{
+			using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+			{
+				RSAParameters publicParams = rsa.ExportParameters(false);
+				RSAParameters privateParams = rsa.ExportParameters(true);
+
+				return new RSAParameters[] { publicParams, privateParams };
+			}
+		}
+
+		public static string AsymmetricEncryptionRSAEncrypt(string input, RSAParameters publicKey)
+		{
+			string result;
+			byte[] messageBytes;
+			BigInteger n, e;
+
+			try
+			{
+				messageBytes = Encoding.UTF8.GetBytes(input);
+			}
+			catch
+			{
+				throw new Exception("В сообщении находятся символы, не существующие в кодировке UTF-8.");
+			}
+
+			using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+			{
+				rsa.ImportParameters(publicKey);
+
+				messageBytes = rsa.Encrypt(messageBytes, false);
+			}
+
+			result = "Результат RSA шифрования - набор байтов: ";
+			foreach (byte b in messageBytes)
+				result += b.ToString() + " ";
+
+			n = new BigInteger(publicKey.Modulus);
+			e = new BigInteger(publicKey.Exponent);
+
+			result += "\n\nЗначения открытого ключа:\n";
+			result += string.Format("n = {0}\n", n.ToString());
+			result += string.Format("e = {0}\n", e.ToString());
+
+			result += "\n\nПолученная строка: " + Encoding.UTF8.GetString(messageBytes);
+
+			return result;
+		}
+
+		public static string AsymmetricEncryptionRSADecrypt(string input, RSAParameters privateKey)
+		{
+			string result;
+			byte[] messageBytes;
+			string[] stringMessageBytes = input.Split(" ");
+			BigInteger n, d;
+
+			messageBytes = new byte[stringMessageBytes.Length];
+
+			try
+			{
+				for (int i = 0; i < stringMessageBytes.Length; i++)
+					messageBytes[i] = Convert.ToByte(stringMessageBytes[i]);
+			}
+			catch
+			{
+				throw new Exception("Один из байтов входного сообщения не является числом от 0 до 255.");
+			}
+
+			using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+			{
+				rsa.ImportParameters(privateKey);
+
+				messageBytes = rsa.Decrypt(messageBytes, false);
+			}
+
+			n = new BigInteger(privateKey.Modulus);
+			d = new BigInteger(privateKey.D);
+
+			result = string.Format("Результат RSA-дешифрования - изначальная строка: {0}", Encoding.UTF8.GetString(messageBytes));
+
+			result += "\n\nЗначения закрытого ключа:\n";
+			result += string.Format("n = {0}\n", n.ToString());
+			result += string.Format("d = {0}\n", d.ToString());
+
+			return result;
+		}
+
+		public static string Hashing(string input, string algorithm)
+		{
+			byte[] messageBytes = { };
+			string[] stringMessageBytes;
+			string result;
+
+			if (Array.IndexOf(hashingAlgorithms, algorithm) == -1)
+				throw new Exception(string.Format("Алгоритма хеширования под названием {0} не существует.", algorithm));
+
+			if (input.Length < 2)
+				throw new Exception(string.Format("Для {0} хеширования в файле должны стоять тип входных данных (b - байты через пробел, s - символы UTF8) и сами входные данные, эти части должны быть разделены пробелом.", algorithm));
+
+			if (input[1] != ' ')
+				throw new Exception(string.Format("Для {0} хеширования вторым символом должен быть пробел.", algorithm));
+
+			if (input[0] != 'b' && input[0] != 's')
+				throw new Exception(string.Format("Для {0} хеширования необходимо первым символом указать тип входных данных: b - байты через пробел, s - символы UTF8.", algorithm));
+
+			if (input[0] == 'b')
+			{
+				input = input.Substring(2);
+
+				stringMessageBytes = input.Split(' ');
+				messageBytes = new byte[stringMessageBytes.Length];
+
+				try
+				{
+					for (int i = 0; i < stringMessageBytes.Length; i++)
+						messageBytes[i] = Convert.ToByte(stringMessageBytes[i]);
+				}
+				catch
+				{
+					throw new Exception("Один из байтов входного сообщения не является числом от 0 до 255.");
+				}
+			}
+			else if (input[0] == 's')
+			{
+				input = input.Substring(2);
+
+				try
+				{
+					messageBytes = Encoding.UTF8.GetBytes(input);
+				}
+				catch
+				{
+					throw new Exception("В сообщении находятся символы, не существующие в кодировке UTF-8.");
+				}
+			}
+
+			if (algorithm == hashingAlgorithms[0])
+				using (MD5 md5 = MD5.Create())
+				{
+					messageBytes = md5.ComputeHash(messageBytes);
+				}
+			else if (algorithm == hashingAlgorithms[1])
+				using (SHA1 sha1 = SHA1.Create())
+				{
+					messageBytes = sha1.ComputeHash(messageBytes);
+				}
+			else if (algorithm == hashingAlgorithms[2])
+				using (SHA256 sha256 = SHA256.Create())
+				{
+					messageBytes = sha256.ComputeHash(messageBytes);
+				}
+			else if (algorithm == hashingAlgorithms[3])
+				using (SHA512 sha512 = SHA512.Create())
+				{
+					messageBytes = sha512.ComputeHash(messageBytes);
+				}
+
+			result = string.Format(string.Format("Результат {0} хеширования - набор байтов: ", algorithm));
+			foreach (byte b in messageBytes)
+				result += b.ToString() + " ";
+
+			result += string.Format("\nПолученная строка: {0}", BitConverter.ToString(messageBytes).Replace("-", "").ToLower());
+
+			return result;
+		}
+
+		public static string DigitalSignatureCreateWithRSA(string input, RSAParameters privateKey)
+		{
+			byte[] messageBytes;
+			string result;
+
+			try
+			{
+				messageBytes = Encoding.UTF8.GetBytes(input);
+			}
+			catch
+			{
+				throw new Exception("В сообщении находятся символы, не существующие в кодировке UTF-8.");
+			}
+
+			using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+			{
+				rsa.ImportParameters(privateKey);
+
+				messageBytes = rsa.SignData(messageBytes, CryptoConfig.MapNameToOID("SHA256"));
+			}
+
+			result = "Результат вычисления подписи с помощью RSA - набор байтов: ";
+			foreach (byte b in messageBytes)
+				result += b.ToString() + " ";
+
+			result += string.Format("\n\nПолученная строка: {0}", Encoding.UTF8.GetString(messageBytes));
+
+			return result;
+		}
+
+		public static string DigitalSignatureVerifyWithRSA(string input, RSAParameters publicKey)
+		{
+			byte[] messageBytes, signatureBytes;
+			string[] stringSignatureBytes;
+			int delimeterPosition;
+			bool isVerified;
+
+			delimeterPosition = input.IndexOf("\n");
+			if (delimeterPosition == -1 || delimeterPosition == 0 || delimeterPosition + 1 == input.Length)
+				throw new Exception("Для проверки цифровой подписи необходимо передать изначальные данные в виде строки и подпись в виде набора байтов, данные и подпись должны быть на разных строках.");
+
+			stringSignatureBytes = input.Substring(delimeterPosition + 1).Split(' ');
+			signatureBytes = new byte[stringSignatureBytes.Length];
+			try
+			{
+				for (int i = 0; i < stringSignatureBytes.Length; i++)
+					signatureBytes[i] = Convert.ToByte(stringSignatureBytes[i]);
+			}
+			catch
+			{
+				throw new Exception("Один из байтов входного сообщения не является числом от 0 до 255.");
+			}
+
+			input = input.Substring(0, delimeterPosition - 1);
+			try
+			{
+				messageBytes = Encoding.UTF8.GetBytes(input);
+			}
+			catch
+			{
+				throw new Exception("В сообщении находятся символы, не существующие в кодировке UTF-8.");
+			}
+
+			using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+			{
+				rsa.ImportParameters(publicKey);
+
+				isVerified = rsa.VerifyData(messageBytes, CryptoConfig.MapNameToOID("SHA256"), signatureBytes);
+			}
+
+			if (isVerified)
+				return string.Format("Результат проверки подписи с помощью RSA: электронная подпись верна. ({0})", isVerified);
+			return string.Format("Результат проверки подписи с помощью RSA: электронная подпись не верна. ({0})", isVerified);
 		}
 	}
 
