@@ -2649,7 +2649,7 @@ namespace _5_crypto_2_final_ver
 
 			delimeterPosition = input.IndexOf("\n");
 			if (delimeterPosition == -1 || delimeterPosition == 0 || input.Length == delimeterPosition + 1)
-				throw new Exception("Для 3DES шифрования во входном файле должны быть сообщение и ключ с IV, сообщение и параметры они должны находиться на разных строках.");
+				throw new Exception("Для 3DES шифрования во входном файле должны быть сообщение и ключ с IV, сообщение и параметры должны находиться на разных строках.");
 
 			message = input.Substring(0, delimeterPosition - 1);
 			input = input.Substring(delimeterPosition + 1);
